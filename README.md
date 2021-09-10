@@ -16,3 +16,11 @@ $ ./bin/k3ai
 ### Testing
 
 ``make test``
+
+### Special Mentions
+
+Initial project was made by @GSantomaggio and @alefesta in two weeks time. While a refactoring was possible, it was determined
+it would be easier to re-write from scratch the code.
+
+Special thanks to https://github.com/lacion/cookiecutter-golang for inventing the golang cookiecutter, that saved a lot of time in setting 
+up the project.
