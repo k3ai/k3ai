@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/alefesta/k3ai/version"
+	version "github.com/alefesta/k3ai/internals"
 	"github.com/spf13/cobra"
 )
 
@@ -12,6 +12,7 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version number of generated code example",
 	Long:  `All software has versions. This is generated code example`,
 	Run: func(cmd *cobra.Command, args []string) {
+				
 		fmt.Println("Build Date:", version.BuildDate)
 		fmt.Println("Git Commit:", version.GitCommit)
 		fmt.Println("Version:", version.Version)

@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
-
+	"fmt"
 	"github.com/spf13/cobra"
 )
 
@@ -11,14 +10,23 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "generated code example",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Use:   "k3ai [flags]",
+	Short: "A simple way to learn and use Artificial Intelligence.",
+	Long: `
+	What is K3ai?
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	K3ai allow anyone to start with Artificial Intelligence.
+	You focus on your needs we take care of everything you need.
+	
+	How it works?
+	
+	Like a cooking recipe, you select the ingredients we take care of everything else.
+	
+	- Infrastructure deployment
+	- PreRequisites and PosRequisites
+	- AI Tools deployment
+	
+	https://github.com/k3ai-project/k3ai`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//      Run: func(cmd *cobra.Command, args []string) { },
@@ -39,5 +47,6 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.DisableFlagParsing = false
 
 }
