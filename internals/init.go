@@ -46,12 +46,12 @@ func getContent(url string) ([]byte, error) {
     defer resp.Body.Close()
 
     if resp.StatusCode != http.StatusOK {
-        return nil, fmt.Errorf("Status error: %v", resp.StatusCode)
+        return nil, fmt.Errorf("status error: %v", resp.StatusCode)
     }
 
     data, err := ioutil.ReadAll(resp.Body)
     if err != nil {
-        return nil, fmt.Errorf("Read body: %v", err)
+        return nil, fmt.Errorf("read body: %v", err)
     }
 
     return data, nil
