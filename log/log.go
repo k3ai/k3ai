@@ -2,7 +2,6 @@ package log
 
 import (
 	"os"
-
 	"github.com/sirupsen/logrus"
 	"github.com/alefesta/k3ai/config"
 )
