@@ -30,6 +30,7 @@ var dataResults = data.K3ai{}
 // var db *sql.DB
 //Init initialize the k3ai tool. 
 func Init(){
+	var action = "create"
 	homeDir,_ := os.UserHomeDir()
 	err := mkDir()
 	 if err == nil {
@@ -46,7 +47,7 @@ func Init(){
 			log.Info("Done | K3ai DataBase created...")
 			time.Sleep(500 * time.Millisecond)
 			log.Warning("Synchronizing plugin list...")
-			err = pluginContent()
+			err = pluginContent(action)
 			if err == nil {
 				log.Info("Done | Plugins synchronized")
 			}
@@ -55,6 +56,17 @@ func Init(){
 	 
 
 }
+
+func Update(){
+		var action = "update"
+		log.Info("Updating K3ai plugin list...")
+		time.Sleep(500 * time.Millisecond)
+		err := pluginContent(action)
+		if err == nil {
+			log.Info("Done | Plugins synchronized")
+		}
+}
+
 
 //mkDir create a local directory under user home folder
 func mkDir() error {
@@ -71,15 +83,16 @@ func mkDir() error {
 
 
 //Read the current plugin details
- func pluginContent () error {
+ func pluginContent (action string) error {
 	ctx,client,_ := auth.MainGitHub()
 	// Let's retrieve the list of various plugins and store them as a
 	_,reposApps,_,_:= client.Repositories.GetContents(ctx,repoOwner,repoRoot,repoApps,nil)
-	// _,reposInfra,_,_:= client.Repositories.GetContents(ctx,repoOwner,repoRoot,repoInfra,nil)
+	_,reposInfra,_,_:= client.Repositories.GetContents(ctx,repoOwner,repoRoot,repoInfra,nil)
 	// _,reposComms,_,_:= client.Repositories.GetContents(ctx,repoOwner,repoRoot,repoComm,nil)
-	// _,reposBundles,_,_:= client.Repositories.GetContents(ctx,repoOwner,repoRoot,repoBundle,nil)
+	_,reposBundles,_,_:= client.Repositories.GetContents(ctx,repoOwner,repoRoot,repoBundle,nil)
+
 	for _,repoApp := range reposApps {
-			if repoApp.GetType() == "dir" {
+			if repoApp.GetType() == "dir"  && repoApp.GetName() != "template" {
 				subRoot := repoApp.GetPath()
 				_,subContents,_,_ := client.Repositories.GetContents(ctx,repoOwner,repoRoot,subRoot,nil)
 				for _,subContent := range subContents {
@@ -91,13 +104,67 @@ func mkDir() error {
 						if err != nil {
 							log.Error(err)
 						}
-
-						auth.FillTables(&dataResults, subContent.GetDownloadURL())
+						if action == "create" {
+							auth.FillPluginTables(&dataResults, subContent.GetDownloadURL())
+						} else if action == "update" {
+							auth.UpdatePluginTables(&dataResults, subContent.GetDownloadURL())
+						}
+						
 					}
 					
 				}
 			}
 	 }
+
+	 for _,repoInfra := range reposInfra {
+		if repoInfra.GetType() == "dir" && repoInfra.GetName() != "template" {
+			subRoot := repoInfra.GetPath()
+			_,subContents,_,_ := client.Repositories.GetContents(ctx,repoOwner,repoRoot,subRoot,nil)
+			for _,subContent := range subContents {
+				if subContent.GetType() == "file" && subContent.GetName() == k3aiFile {
+					url := subContent.GetDownloadURL()
+					data,_ := getContent(url)
+				
+					err := yaml.Unmarshal([]byte(data), &dataResults)
+					if err != nil {
+						log.Error(err)
+					}
+
+					if action == "create" {
+						auth.FillPluginTables(&dataResults, subContent.GetDownloadURL())
+					} else if action == "update" {
+						auth.UpdatePluginTables(&dataResults, subContent.GetDownloadURL())
+					}
+				}
+				
+			}
+		}
+ }
+
+ for _,repoBundle := range reposBundles {
+	if repoBundle.GetType() == "dir" && repoBundle.GetName() != "template"  {
+		subRoot := repoBundle.GetPath()
+		_,subContents,_,_ := client.Repositories.GetContents(ctx,repoOwner,repoRoot,subRoot,nil)
+		for _,subContent := range subContents {
+			if subContent.GetType() == "file" && subContent.GetName() == k3aiFile {
+				url := subContent.GetDownloadURL()
+				data,_ := getContent(url)
+			
+				err := yaml.Unmarshal([]byte(data), &dataResults)
+				if err != nil {
+					log.Error(err)
+				}
+
+				if action == "create" {
+					auth.FillPluginTables(&dataResults, subContent.GetDownloadURL())
+				} else if action == "update" {
+					auth.UpdatePluginTables(&dataResults, subContent.GetDownloadURL())
+				}
+			}
+			
+		}
+	}
+}
 	 return nil
  }
 

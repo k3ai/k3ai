@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	// "github.com/alefesta/k3ai/log"
+	"github.com/alefesta/k3ai/log"
     initialize "github.com/alefesta/k3ai/internals"
 	"github.com/spf13/cobra"
 )
@@ -35,12 +35,20 @@ Init has also two sub-commands:
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "Delete k3ai from the local computer.",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.Error("Currently Delete function has not been yet implemented...")
+
+	},
 }
 
 // updateCmd represents the version command
 var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update k3ai on the local computer.",
+	Run: func(cmd *cobra.Command, args []string) {
+		initialize.Update()
+
+	},
 }
 
 func init() {

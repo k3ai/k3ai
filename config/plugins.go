@@ -26,8 +26,9 @@ type K3ai struct {
 					Name string `yaml:"name"`
 					Desc string `yaml:"desc"`
 					Tag	string `yaml:"tag,omitempty"`
-					Version string `yaml:"version"`
-					Type string `yaml:"type"`
+					Version string `yaml:"version,omitempty"`
+					PluginType string `yaml:"plugintype"`
+
 	}
 
 	Resources []string `yaml:"resources,omitempty"`

@@ -27,6 +27,7 @@ type appTable struct {
 	desc	string
 	ver		string
 	tag		string
+	url		string
 }
 var appsRows appTable
 
@@ -43,8 +44,7 @@ func AppsDisplaySQL() (result []string){
 		var ver string
 		var tag string
 		var pluginType string
-		var resource string
-		row.Scan(&id, &name, &desc,&ver,&tag,&pluginType,&resource)
+		row.Scan(&id, &name, &desc,&ver,&tag,&pluginType)
 		appsRows.name = name
 		appsRows.desc = desc
 		appsRows.ver = ver
@@ -139,79 +139,53 @@ func DbCreate() (db *sql.DB,err error){
 
 //createTables add the minimal set of tables to the db
 func createTables(db *sql.DB) (dbConn *sql.DB,err error) {
-	//Create Application plugins list
-	appsTable := `CREATE TABLE apps (
+
+	//Create relationship table between clusters and plugins to store config status
+		appsTable := `CREATE TABLE cluster_plugins (
+			"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+			"clusId" INT ,
+			"plugId" INT,
+			);`
+			dbState, err := db.Prepare(appsTable)
+			if err != nil {
+				log.Fatal(err.Error())
+				return db,err
+			}
+			dbState.Exec()
+
+	// Create CLUSTERS table to register clusters
+	appsTable = `CREATE TABLE clusters (
 		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-		"name" TEXT,
-		"desc" TEXT,
-		"ver" TEXT,
-		"tag" TEXT,
+		"name" TEXT ,
 		"type" TEXT,
-		"resources" TEXT
 		);`
-		dbState, err := db.Prepare(appsTable)
+		dbState, err = db.Prepare(appsTable)
 		if err != nil {
 			log.Fatal(err.Error())
 			return db,err
 		}
 		dbState.Exec()
-	//Create Infra plugins list
-	infraTable := `CREATE TABLE infra (
+	//Create Application plugins list
+	appsTable = `CREATE TABLE plugins (
 		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 		"name" TEXT,
 		"desc" TEXT,
 		"ver" TEXT,
 		"tag" TEXT,
-		"type" TEXT,
-		"resources" TEXT
+		"url" TEXT,
 		);`
-		dbState = nil
-		dbState, err = db.Prepare(infraTable)
+		dbState, err = db.Prepare(appsTable)
 		if err != nil {
 			log.Fatal(err.Error())
 			return db,err
-		} else {
-			dbState.Exec()
 		}
-		
-	//Create Common plugins list
-	commonTable := `CREATE TABLE commons (
-		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-		"name" TEXT,
-		"desc" TEXT,
-		"ver" TEXT,
-		"tag" TEXT
-		);`
-		dbState = nil
-		dbState, err = db.Prepare(commonTable)
-		if err != nil {
-			log.Fatal(err.Error())
-			return db,err
-		} else {
-			dbState.Exec()
-		}
-		
-	//Create Bundles plugins list
-	bundlesTable := `CREATE TABLE bundles (
-		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-		"name" TEXT,
-		"desc" TEXT,
-		"ver" TEXT,
-		"tag" TEXT
-		);`
-		dbState = nil
-		dbState, err = db.Prepare(bundlesTable)
-		if err != nil {
-			log.Fatal(err.Error())
-			return db,err
-		} else {
-			dbState.Exec()
-		}
+		dbState.Exec()
+
 		return db,err
 }
 
 
-func FillTables(data *data.K3ai, url string) error {
+func FillPluginTables(data *data.K3ai, url string) error {
 	homeDir,_ := os.UserHomeDir()
 	dbPath := homeDir + "/" + homeK3ai + "/" + "k3ai.db"
 	db, _ := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
@@ -220,16 +194,46 @@ func FillTables(data *data.K3ai, url string) error {
 	desc := data.Metadata.Desc
 	ver := data.Metadata.Version
 	tag  := data.Metadata.Tag
-	pluginType := data.Metadata.Type
-	resources := url
+	pluginType := data.Metadata.PluginType
+	urlDB := url
 	
-	fillApps := `INSERT INTO apps(name,desc,ver,tag,type,resources) VALUES (?, ?, ?, ?, ?, ?)`
+	fillApps := `INSERT INTO plugins(name,desc,ver,tag,type,url) VALUES (?, ?, ?, ?, ?,?)`
 	statement, err:= db.Prepare(fillApps)
 	if err != nil {
 		log.Error(err)
 	}
 	defer statement.Close()
-	_,err = statement.Exec(name,desc,ver,tag,pluginType,resources)
+	_,err = statement.Exec(name,desc,ver,tag,pluginType,urlDB)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+
+func UpdatePluginTables(data *data.K3ai, url string) error {
+	homeDir,_ := os.UserHomeDir()
+	dbPath := homeDir + "/" + homeK3ai + "/" + "k3ai.db"
+	db, err := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
+	if err != nil {
+		log.Info("Did you run k3ai init first? We need to creat the db first..")
+	}
+	defer db.Close()
+	name := data.Metadata.Name
+	desc := data.Metadata.Desc
+	ver := data.Metadata.Version
+	tag  := data.Metadata.Tag
+	pluginType := data.Metadata.PluginType
+	urlDB := url
+	
+	fillApps := `INSERT IGNORE INTO plugins(name,desc,ver,tag,type,url) VALUES (?, ?, ?, ?, ?,?)`
+	statement, err:= db.Prepare(fillApps)
+	if err != nil {
+		log.Error(err)
+	}
+	defer statement.Close()
+	_,err = statement.Exec(name,desc,ver,tag,pluginType,urlDB)
 	if err != nil {
 		log.Error(err)
 		return err
