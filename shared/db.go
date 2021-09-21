@@ -23,11 +23,12 @@ const (
 )
 
 type appTable struct {
-	name	string
-	desc	string
-	ver		string
-	tag		string
-	url		string
+	name		string
+	desc		string
+	ver			string
+	tag			string
+	pluginType 	string
+	url			string
 }
 var appsRows appTable
 
@@ -35,7 +36,7 @@ func AppsDisplaySQL() (result []string){
 	homeDir,_ := os.UserHomeDir()
 	dbPath := homeDir + "/" + homeK3ai + "/" + "k3ai.db"
 	db, _ := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
-	row, _ := db.Query("SELECT * FROM apps ORDER BY name")
+	row, _ := db.Query("SELECT * FROM plugins WHERE type='Application' ORDER BY name ;")
 	defer row.Close()
 	for row.Next() { // Iterate and fetch the records from result cursor
 		var id int
@@ -49,8 +50,7 @@ func AppsDisplaySQL() (result []string){
 		appsRows.desc = desc
 		appsRows.ver = ver
 		appsRows.tag = tag
-		result := []string{name,desc,ver,tag}
-		return result
+		result = append(result,name,desc,ver,tag)
 	}
 	return result
 }
@@ -59,24 +59,25 @@ func InfraDisplaySQL() (result []string){
 	homeDir,_ := os.UserHomeDir()
 	dbPath := homeDir + "/" + homeK3ai + "/" + "k3ai.db"
 	db, _ := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
-	row, _ := db.Query("SELECT * FROM infra ORDER BY name")
+	row, _ := db.Query("SELECT * FROM plugins WHERE type='Infra' ORDER BY name ;")
 	defer row.Close()
+	var id int
+	var name string
+	var desc string
+	var ver string
+	var tag string
+	var pluginType string
+	var resource string
 	for row.Next() { // Iterate and fetch the records from result cursor
-		var id int
-		var name string
-		var desc string
-		var ver string
-		var tag string
-		var pluginType string
-		var resource string
 		row.Scan(&id, &name, &desc,&ver,&tag,&pluginType,&resource)
 		appsRows.name = name
 		appsRows.desc = desc
 		appsRows.ver = ver
 		appsRows.tag = tag
-		result := []string{name,desc,ver,tag}
-		return result
+		result = append(result,name,desc,ver,tag)
 	}
+	
+	// return result
 	return result
 }
 
@@ -84,7 +85,7 @@ func BundleDisplaySQL() (result []string){
 	homeDir,_ := os.UserHomeDir()
 	dbPath := homeDir + "/" + homeK3ai + "/" + "k3ai.db"
 	db, _ := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
-	row, _ := db.Query("SELECT * FROM bundles ORDER BY name")
+	row, _ := db.Query("SELECT * FROM plugins WHERE type='Bundle' ORDER BY name ;")
 	defer row.Close()
 	for row.Next() { // Iterate and fetch the records from result cursor
 		var id int
@@ -99,8 +100,7 @@ func BundleDisplaySQL() (result []string){
 		appsRows.desc = desc
 		appsRows.ver = ver
 		appsRows.tag = tag
-		result := []string{name,desc,ver,tag}
-		return result
+		result = append(result,name,desc,ver,tag)
 	}
 	return result
 }
@@ -142,9 +142,9 @@ func createTables(db *sql.DB) (dbConn *sql.DB,err error) {
 
 	//Create relationship table between clusters and plugins to store config status
 		appsTable := `CREATE TABLE cluster_plugins (
-			"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+			"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
 			"clusId" INT ,
-			"plugId" INT,
+			"plugId" INT
 			);`
 			dbState, err := db.Prepare(appsTable)
 			if err != nil {
@@ -155,9 +155,9 @@ func createTables(db *sql.DB) (dbConn *sql.DB,err error) {
 
 	// Create CLUSTERS table to register clusters
 	appsTable = `CREATE TABLE clusters (
-		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
 		"name" TEXT ,
-		"type" TEXT,
+		"type" TEXT
 		);`
 		dbState, err = db.Prepare(appsTable)
 		if err != nil {
@@ -167,12 +167,13 @@ func createTables(db *sql.DB) (dbConn *sql.DB,err error) {
 		dbState.Exec()
 	//Create Application plugins list
 	appsTable = `CREATE TABLE plugins (
-		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-		"name" TEXT,
+		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+		"name" TEXT UNIQUE,
 		"desc" TEXT,
 		"ver" TEXT,
 		"tag" TEXT,
-		"url" TEXT,
+		"type" TEXT,
+		"url" TEXT
 		);`
 		dbState, err = db.Prepare(appsTable)
 		if err != nil {
@@ -194,7 +195,7 @@ func FillPluginTables(data *data.K3ai, url string) error {
 	desc := data.Metadata.Desc
 	ver := data.Metadata.Version
 	tag  := data.Metadata.Tag
-	pluginType := data.Metadata.PluginType
+	pluginType := data.Kind
 	urlDB := url
 	
 	fillApps := `INSERT INTO plugins(name,desc,ver,tag,type,url) VALUES (?, ?, ?, ?, ?,?)`
@@ -224,10 +225,10 @@ func UpdatePluginTables(data *data.K3ai, url string) error {
 	desc := data.Metadata.Desc
 	ver := data.Metadata.Version
 	tag  := data.Metadata.Tag
-	pluginType := data.Metadata.PluginType
+	pluginType := data.Kind
 	urlDB := url
 	
-	fillApps := `INSERT IGNORE INTO plugins(name,desc,ver,tag,type,url) VALUES (?, ?, ?, ?, ?,?)`
+	fillApps := `INSERT OR REPLACE INTO plugins(name,desc,ver,tag,type,url) VALUES (?, ?, ?, ?, ?,?);`
 	statement, err:= db.Prepare(fillApps)
 	if err != nil {
 		log.Error(err)
@@ -239,4 +240,18 @@ func UpdatePluginTables(data *data.K3ai, url string) error {
 		return err
 	}
 	return nil
+}
+
+func SelectPlugin(pluginName string) (pluginType string, pluginUrl string) {
+	homeDir,_ := os.UserHomeDir()
+	dbPath := homeDir + "/" + homeK3ai + "/" + "k3ai.db"
+	db, _ := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
+	query := "SELECT type,url FROM plugins WHERE name='" + pluginName +"';"
+	row := db.QueryRow(query,pluginName)
+	err := row.Scan(&pluginType,&pluginUrl)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return pluginType, pluginUrl
 }

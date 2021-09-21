@@ -50,9 +50,22 @@ func listTable( title string,column1 string, column2 string, column3 string, col
         t.SetColumnConfigs([]table.ColumnConfig{
             {Number: 2,WidthMaxEnforcer: text.Trim},
         })
-         t.AppendRow(table.Row{results[0],text.WrapSoft(string(results[1]),100),results[2],results[3]})
+        var i int
+        limit := 4
+        for i = 0; i < len(results); i+= limit{
+            batch := results[i:min(i+limit, len(results))]
+            t.AppendRow(table.Row{batch[0],text.WrapSoft(string(batch[1]),100),batch[2],batch[3]})
+        }
+         
     
         t.Render()
     }
 
+}
+
+func min(a, b int) int {
+    if a <= b {
+        return a
+    }
+    return b
 }

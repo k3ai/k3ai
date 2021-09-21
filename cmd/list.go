@@ -19,15 +19,15 @@ List command  always shows ALL options but may be also used along with --tag fol
 
 NOTE: Filter options are mutally exclusive so cannot be used together`,
 	Run: func(cmd *cobra.Command, args []string) {
-		res,_ := cmd.Flags().GetString("tag")
+		res,_ := cmd.Flags().GetString("type")
 		list.List(res)
 
 	},
 	Example: `
 	k3ai list 	          //shows all the possible options
-	k3ai list --tag infra 	  //shows all the Infrastructure options
-	k3ai list --tag apps	  //shows all the Applications options
-	k3ai list --tag bundles   //shows all the Bundles options
+	k3ai list --type infra 	  //shows all the Infrastructure options
+	k3ai list --type apps	  //shows all the Applications options
+	k3ai list --type bundles   //shows all the Bundles options
 	`,
 
 }
@@ -39,7 +39,7 @@ func init() {
 	// rootCmd.Flags().Bool("list",false,"test")
 	rootCmd.AddCommand(listCmd)
 	// listCmd.AddCommand(tagCmd)
-	listCmd.Flags().String("tag","","Filter list of supported options by value. Possible values are: infra,apps,bundles")
+	listCmd.Flags().String("type","","Filter list of supported options by value. Possible values are: infra,apps,bundles")
 	// tagCmd.Flags().String("infra","","Filter list of supported infra options by value.")
 	// tagCmd.AddCommand(infraCmd)
 	// tagCmd.AddCommand(appsCmd)
