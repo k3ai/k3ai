@@ -3,6 +3,7 @@ package shared
 import (
 	"os"
 	"time"
+	"strings"
 	"database/sql"
 
 	"github.com/alefesta/k3ai/log"
@@ -191,10 +192,10 @@ func FillPluginTables(data *data.K3ai, url string) error {
 	dbPath := homeDir + "/" + homeK3ai + "/" + "k3ai.db"
 	db, _ := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
 	defer db.Close()
-	name := data.Metadata.Name
-	desc := data.Metadata.Desc
-	ver := data.Metadata.Version
-	tag  := data.Metadata.Tag
+	name := strings.ToLower(data.Metadata.Name)
+	desc := strings.ToLower(data.Metadata.Desc)
+	ver := strings.ToLower(data.Metadata.Version)
+	tag  := strings.ToLower(data.Metadata.Tag)
 	pluginType := data.Kind
 	urlDB := url
 	
@@ -221,10 +222,10 @@ func UpdatePluginTables(data *data.K3ai, url string) error {
 		log.Info("Did you run k3ai init first? We need to creat the db first..")
 	}
 	defer db.Close()
-	name := data.Metadata.Name
-	desc := data.Metadata.Desc
-	ver := data.Metadata.Version
-	tag  := data.Metadata.Tag
+	name := strings.ToLower(data.Metadata.Name)
+	desc := strings.ToLower(data.Metadata.Desc)
+	ver := strings.ToLower(data.Metadata.Version)
+	tag  := strings.ToLower(data.Metadata.Tag)
 	pluginType := data.Kind
 	urlDB := url
 	

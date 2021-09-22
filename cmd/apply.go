@@ -1,7 +1,9 @@
 package cmd
 
 import (
-	// "github.com/alefesta/k3ai/log"clear
+	"os"
+	"strings"
+	"github.com/alefesta/k3ai/log"
     initialize "github.com/alefesta/k3ai/internals"
 	utils "github.com/alefesta/k3ai/shared"
 	"github.com/spf13/cobra"
@@ -16,8 +18,12 @@ Apply is meant to deploy a specific kind of plugin: infrastructure,application o
 Through the apply command a user may have a certain plugin deployed on the target device.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) <= 0 {
+			log.Warn("No plugin has been indicated. The right form is: k3ai apply <plugin-name>")
+			os.Exit(0)
+		}
 		
-		pluginType, pluginUrl := utils.SelectPlugin(args[0])
+		pluginType, pluginUrl := utils.SelectPlugin(strings.ToLower(args[0]))
 
 		if pluginType == "Infra" {
 
