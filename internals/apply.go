@@ -24,7 +24,7 @@ if err != nil {
  * @to-do Read the named plugin and store in memory
  * @body Cache data and automatically use them to install the plugin
  */
-log.Info(dataResults.Resources)
+
 }
 
 func BundlesDeployment() {
