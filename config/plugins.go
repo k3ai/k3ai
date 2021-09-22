@@ -3,23 +3,6 @@ package config
 
 
 type K3ai struct {
-// api: k3ai.in/v1alpha1
-// kind: Application
-// metadata:
-//   name: dummy
-//	 desc: "..."
-//   version: v0.0.0
-//   type: kustomize
-// resources:
-// # Pre Requisites
-// - ../common/cert-manager/
-// - ../common/istio/
-// # Application logic
-// - "http://a.b.c"
-// - "http://d.e.f"
-// # Post Requisites
-// - overlays/ingress.yaml
-// - overlays/rbac.yaml
 	Api string `yaml:"api"`
 	Kind string `yaml:"kind"`
 	Metadata struct {
@@ -33,4 +16,18 @@ type K3ai struct {
 
 	Resources []string `yaml:"resources,omitempty"`
 
+}
+
+type Plugin struct {
+	Api string `yaml:"api"`
+	Kind string `yaml:"kind"`
+	Resources []Resource
+}
+
+type Resource struct {
+	Path string `yaml:"path"`
+	Args string `yaml:"args,omitempty"`
+	Kubecfg string `yaml:"kubeconfig,omitempty"`
+	PluginType string `yaml:"type"`
+	Wait bool `yaml:"wait"`
 }
