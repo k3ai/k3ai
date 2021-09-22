@@ -1,3 +1,4 @@
 todo:
-  keyword: ":to-do:"
+  keyword: "@to-do"
+  bodyKeyword : "@body"
   caseSensitive: true
