@@ -1,9 +1,5 @@
 package internals
-/**
- *
- * @to-do Read the named plugin and store in memory
- * @body Cache data and automatically use them to install the plugin
- */
+
 import (
 	"gopkg.in/yaml.v2"
 	"github.com/alefesta/k3ai/log"
@@ -23,6 +19,11 @@ err := yaml.Unmarshal([]byte(data), &dataResults)
 if err != nil {
 	log.Error(err)
 }
+/**
+ *
+ * @to-do Read the named plugin and store in memory
+ * @body Cache data and automatically use them to install the plugin
+ */
 log.Info(dataResults.Resources)
 }
 
