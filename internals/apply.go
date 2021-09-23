@@ -24,6 +24,7 @@ if err != nil {
 	log.Error(err)
 }
 pluginUrl = strings.TrimSuffix(pluginUrl,"k3ai.yaml")
+log.Info("Starting to install " + pluginName)
  for i:=0; i < len(dataResults.Resources); i++ {
 	 if strings.HasPrefix(dataResults.Resources[i], "../../") {
 		pluginUrl = strings.TrimSuffix(pluginUrl,pluginName + "/k3ai.yaml")
@@ -38,12 +39,15 @@ pluginUrl = strings.TrimSuffix(pluginUrl,"k3ai.yaml")
 		if err != nil {
 			log.Error(err)
 			}
-		pluginEx := string(pluginContents.Resources[0].Path)
-		pluginArgs := string(pluginContents.Resources[0].Args)
-		pluginKube := string(pluginContents.Resources[0].Kubecfg)
-		pluginType := string(pluginContents.Resources[0].PluginType)
-		pluginWait := pluginContents.Resources[0].Wait
-		utils.InitExec(pluginName,pluginEx,pluginArgs,pluginKube,pluginType,pluginWait)
+		for i := range pluginContents.Resources {
+			pluginEx := string(pluginContents.Resources[i].Path)
+			pluginArgs := string(pluginContents.Resources[i].Args)
+			pluginKube := string(pluginContents.Resources[i].Kubecfg)
+			pluginType := string(pluginContents.Resources[i].PluginType)
+			pluginWait := pluginContents.Resources[i].Wait
+			utils.InitExec(pluginName,pluginEx,pluginArgs,pluginKube,pluginType,pluginWait)
+		}
+
 		}
 	 
  	}

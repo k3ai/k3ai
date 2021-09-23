@@ -16,6 +16,7 @@ import (
 
 func InitK8s(kubeconfig string, pluginName string) error {
 	log.Info("Cluster up, waiting for remaining services to start...")
+	time.Sleep(1 * time.Second)
 	s := spinner.StartNew("Checking, please wait...")
 	s.Start()
 	s.SetSpeed(100 * time.Millisecond)
@@ -38,10 +39,12 @@ func InitK8s(kubeconfig string, pluginName string) error {
 	if err != nil {
 		panic(err.Error())
 	}
+	time.Sleep(40 * time.Second)
 	pods, err := clientset.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		panic(err.Error())
 	}
+
 	time.Sleep(5 * time.Second) // something more productive here
 	if pods.Items[0].Status.Phase == "Running"{
 		fmt.Println("Done")
