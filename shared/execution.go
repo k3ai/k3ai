@@ -1,7 +1,7 @@
 package shared
 
 import (
-	// "os"
+	"os"
 	"os/exec"
 	// "io/ioutil"
 	// config "github.com/alefesta/k3ai/config"
@@ -12,12 +12,14 @@ func InitExec(pluginName string ,pluginEx string ,pluginArgs string,pluginKube s
 	log.Info("Starting to install " + pluginName)
 	if pluginType == "shell" {
 		_,err := exec.Command("/bin/bash","-c",pluginEx,pluginArgs).Output()
-		if err == nil {
+		if err != nil {
+			os.Exit(0)
 			log.Error(err)
-		} else {
-			InitK8s(pluginKube, pluginName)
-		}
-
+		} 
+		err = InitK8s(pluginKube, pluginName)
+			if err != nil {
+				log.Error(err)
+			}
 		}
 
 	}

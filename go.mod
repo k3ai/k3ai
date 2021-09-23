@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/google/go-github/v39 v39.0.0
+	github.com/janeczku/go-spinner v0.0.0-20150530144529-cf8ef1d64394
 	github.com/jedib0t/go-pretty/v6 v6.2.4
 	github.com/joho/godotenv v1.3.0
 	github.com/mattn/go-sqlite3 v1.14.8

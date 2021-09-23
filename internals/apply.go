@@ -10,9 +10,9 @@ import (
 )
 var pluginContents = data.Plugin{}
 func Apply() {
-	var kubeconfig = ""
-	var pluginName = ""
-	utils.InitK8s(kubeconfig, pluginName)
+	// var kubeconfig = ""
+	// var pluginName = ""
+	// utils.InitK8s(kubeconfig, pluginName)
 }
 
 func InfraDeployment(pluginUrl string, pluginName string) {
@@ -47,6 +47,12 @@ pluginUrl = strings.TrimSuffix(pluginUrl,"k3ai.yaml")
 		}
 	 
  	}
+	 if pluginName == "k3s" {
+		 log.Warn("Do not forget to add K3s config file to your KUBECONFIG variable...")
+		 log.Warn("Please copy and paste the following line...")
+		 log.Warn("export KUBECONFIG=/etc/k3s/k3s.yaml")
+		 log.Info("Cluster is up and running enjoy K3ai...")
+	 }
 }
 
 func BundlesDeployment() {
