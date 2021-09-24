@@ -30,4 +30,5 @@ type Resource struct {
 	Kubecfg string `yaml:"kubeconfig,omitempty"`
 	PluginType string `yaml:"type"`
 	Wait bool `yaml:"wait"`
+	Remove string `yaml:"remove,omitempty"`
 }

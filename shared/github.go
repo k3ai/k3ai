@@ -12,7 +12,9 @@ import (
 
 func MainGitHub() (context.Context, *github.Client, error){
 	//call github utilities
-	err := godotenv.Load(".env")
+	homeDir,_ := os.UserHomeDir()
+	path := homeDir + "/.k3ai/" 
+	err := godotenv.Load(path + ".env")
 	if err == nil {
 	//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
 	token := os.Getenv("GITHUB_AUTH_TOKEN")
