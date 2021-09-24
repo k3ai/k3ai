@@ -54,3 +54,8 @@ func InitK8s(kubeconfig string, pluginName string) error {
 	log.Info("Services up and running...")
 return nil
 }
+
+
+func KustomizeApply() {
+	
+}

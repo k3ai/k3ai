@@ -32,7 +32,7 @@ Through the apply command a user may have a certain plugin deployed on the targe
 
 			initialize.BundlesDeployment()
 		} else {
-			initialize.Apply()
+			initialize.AppsDeployment(pluginUrl,args[0])
 		}
 
 

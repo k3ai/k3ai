@@ -39,14 +39,15 @@ func AppsDisplaySQL() (result []string){
 	db, _ := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
 	row, _ := db.Query("SELECT * FROM plugins WHERE type='Application' ORDER BY name ;")
 	defer row.Close()
+	var id int
+	var name string
+	var desc string
+	var ver string
+	var tag string
+	var pluginType string
+	var resource string
 	for row.Next() { // Iterate and fetch the records from result cursor
-		var id int
-		var name string
-		var desc string
-		var ver string
-		var tag string
-		var pluginType string
-		row.Scan(&id, &name, &desc,&ver,&tag,&pluginType)
+		row.Scan(&id, &name, &desc,&ver,&tag,&pluginType,&resource)
 		appsRows.name = name
 		appsRows.desc = desc
 		appsRows.ver = ver
@@ -88,14 +89,14 @@ func BundleDisplaySQL() (result []string){
 	db, _ := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
 	row, _ := db.Query("SELECT * FROM plugins WHERE type='Bundle' ORDER BY name ;")
 	defer row.Close()
+	var id int
+	var name string
+	var desc string
+	var ver string
+	var tag string
+	var pluginType string
+	var resource string
 	for row.Next() { // Iterate and fetch the records from result cursor
-		var id int
-		var name string
-		var desc string
-		var ver string
-		var tag string
-		var pluginType string
-		var resource string
 		row.Scan(&id, &name, &desc,&ver,&tag,&pluginType,&resource)
 		appsRows.name = name
 		appsRows.desc = desc

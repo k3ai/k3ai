@@ -26,7 +26,7 @@ var rootCmd = &cobra.Command{
 	- PreRequisites and PosRequisites
 	- AI Tools deployment
 	
-	https://github.com/k3ai-project/k3ai`,
+	https://github.com/k3ai`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//      Run: func(cmd *cobra.Command, args []string) { },

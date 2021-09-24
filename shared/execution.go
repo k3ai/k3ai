@@ -1,11 +1,11 @@
 package shared
 
 import (
-	// "os"
+	"os"
 	"bufio"
 	"os/exec"
-	// "io/ioutil"
-	// config "github.com/alefesta/k3ai/config"
+
+	"github.com/go-git/go-git/v5"
 	"github.com/alefesta/k3ai/log"
 )
 
@@ -44,6 +44,17 @@ func InitExec(pluginName string ,pluginEx string ,pluginArgs string,pluginKube s
 		}
 
 	}
+	if pluginType == "kustomize" {
+		_, err := git.PlainClone("/home/alefesta/.k3ai/kustomize", false, &git.CloneOptions{
+			URL:      "https://github.com/kubeflow/manifests",
+			Progress: os.Stdout,
+		})
+		if err != nil {
+			log.Error(err)
+		}
+		// @TODO delete folder after
+	}
+
 }
 
 func InitRemove(pluginName string ,pluginEx string ,pluginArgs string,pluginKube string,pluginType string,pluginWait bool, pluginRemove string) {
