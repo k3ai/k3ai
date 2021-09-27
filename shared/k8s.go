@@ -56,6 +56,3 @@ return nil
 }
 
 
-func KustomizeApply() {
-	
-}
