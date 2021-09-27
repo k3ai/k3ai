@@ -1,6 +1,7 @@
 package internals
 
 import (
+	"os"
 	"strings"
 	"gopkg.in/yaml.v2"
 	"github.com/alefesta/k3ai/log"
@@ -46,10 +47,11 @@ func AppsDeployment(pluginUrl string, pluginName string) {
 		 
 		 }
 		 if pluginName == "k3s" {
-			 log.Warn("Do not forget to add K3s config file to your KUBECONFIG variable...")
-			 log.Warn("Please copy and paste the following line...")
-			 log.Warn("export KUBECONFIG=/etc/k3s/k3s.yaml")
-			 log.Info("Cluster is up and running enjoy K3ai...")
+			os.Setenv("KUBECONFIG", "/etc/rancher/k3s/k3s.yaml")
+			log.Warn("Do not forget to add K3s config file to your KUBECONFIG variable...")
+			log.Warn("Please copy and paste the following line...")
+			log.Warn("export KUBECONFIG=/etc/rancher/k3s/k3s.yaml")
+			log.Info("Cluster is up and running enjoy K3ai...")
 		 }
 }
 
