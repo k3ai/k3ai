@@ -1,4 +1,5 @@
 # k3ai
+Join our slack channel: [here](https://join.slack.com/t/k3ai/shared_invite/zt-weuljdyt-Z~pp2w~XENi6o3wtHGc1fQ)
 
 K3ai aim to simplify access to AI tools and platforms. You select the tool, we take care of everything else.
 
