@@ -2,17 +2,22 @@ package shared
 
 import (
 	// "os"
+
 	"bufio"
 	"os/exec"
 
 	git "github.com/go-git/go-git/v5"
 	"github.com/alefesta/k3ai/log"
+	
 )
 
 
-func InitExec(pluginName string ,pluginEx string ,pluginArgs string,pluginKube string,pluginType string,pluginWait bool) {
+func InitExec(pluginName string ,pluginEx string ,pluginArgs string,pluginKube string,pluginType string,pluginWait bool) error {
 	
 	if pluginType == "shell" {
+		if pluginEx == "post" {
+			pluginEx = ""
+		}
 		cmd := exec.Command("/bin/bash","-c",pluginEx,pluginArgs)
 		r, _ := cmd.StdoutPipe()
 		cmd.Stderr = cmd.Stdout
@@ -41,12 +46,13 @@ func InitExec(pluginName string ,pluginEx string ,pluginArgs string,pluginKube s
 		}
 
 		if pluginWait {
-			err = InitK8s(pluginKube, pluginName)
+			err = InitK8s(pluginKube,pluginName)
 			if err != nil {
 				log.Error(err)
 			}
+			
 		}
-
+		return err
 	}
 	if pluginType == "kustomize" {
 		
@@ -75,10 +81,12 @@ func InitExec(pluginName string ,pluginEx string ,pluginArgs string,pluginKube s
 			// os.Exit(0)	
 		}
 		<-done
-		err = cmd.Wait()
-		log.Error(err)
-
+		cmd.Wait()
+		 //Let's check if there's any pod in a "non-running" status and wait for it.
+		InitK8s("",pluginName)
+		return err
 	}
+	return nil
 }
 
 func InitRemove(pluginName string ,pluginEx string ,pluginArgs string,pluginKube string,pluginType string,pluginWait bool, pluginRemove string) {
@@ -106,14 +114,7 @@ func InitRemove(pluginName string ,pluginEx string ,pluginArgs string,pluginKube
 			// os.Exit(0)	
 		}
 		<-done
-		err = cmd.Wait()
-		log.Error(err)
-		// if pluginWait {
-		// 	err = InitK8s(pluginKube, pluginName)
-		// 	if err != nil {
-		// 		log.Error(err)
-		// 	}
-		// }
+		cmd.Wait()
 
 	}
 }

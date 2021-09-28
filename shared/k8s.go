@@ -1,58 +1,88 @@
 package shared
 
 import (
+
 	"github.com/alefesta/k3ai/log"
-	"fmt"
 	"time"
 	"context"
-	// "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"path/filepath"
+
+	"github.com/pkg/errors"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-	"github.com/janeczku/go-spinner"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	// auth providers
+	_ "k8s.io/client-go/plugin/pkg/client/auth/azure"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
+
 
 )
 
 
-func InitK8s(kubeconfig string, pluginName string) error {
-	log.Info("Cluster up, waiting for remaining services to start...")
-	time.Sleep(1 * time.Second)
-	s := spinner.StartNew("Checking, please wait...")
-	s.Start()
-	s.SetSpeed(100 * time.Millisecond)
-	s.SetCharset([]string{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"})
-	if kubeconfig == "" {
-		kubeconfig = "/home/alefesta/.kube/config"
+// NewClientConfig returns a new Kubernetes client config set for a context
+func NewClientConfig(configPath string, contextName string) clientcmd.ClientConfig {
+	configPathList := filepath.SplitList(configPath)
+	configLoadingRules := &clientcmd.ClientConfigLoadingRules{}
+	if len(configPathList) <= 1 {
+		configLoadingRules.ExplicitPath = configPath
+	} else {
+		configLoadingRules.Precedence = configPathList
 	}
-	if pluginName == "k3s" {
-		kubeconfig = "/etc/rancher/k3s/k3s.yaml"
-	}
-	
-	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	// create the clientset
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
-	}
-	time.Sleep(40 * time.Second)
-	pods, err := clientset.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		panic(err.Error())
-	}
-
-	time.Sleep(5 * time.Second) // something more productive here
-	if pods.Items[0].Status.Phase == "Running"{
-		fmt.Println("Done")
-		
-	}
-	s.Stop()
-	log.Info("Services up and running...")
-return nil
+	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		configLoadingRules,
+		&clientcmd.ConfigOverrides{
+			CurrentContext: contextName,
+		},
+	)
 }
 
+// NewClientSet returns a new Kubernetes client for a client config
+func NewClientSet(clientConfig clientcmd.ClientConfig) (*kubernetes.Clientset, error) {
+	c, err := clientConfig.ClientConfig()
+
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get client config")
+	}
+
+	clientset, err := kubernetes.NewForConfig(c)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create clientset")
+	}
+
+	return clientset, nil
+}
+
+// GetK3sClientSet returns the kubernetes Clientset
+func GetK3sClientSet() (*kubernetes.Clientset, error) {
+	clientConfig := NewClientConfig(GetK3sKubeConfig(), "default")
+	return NewClientSet(clientConfig)
+
+}
+
+// GetK0sClientSet returns the kubernetes Clientset
+func GetK0sClientSet() (*kubernetes.Clientset, error) {
+	clientConfig := NewClientConfig(GetK0sKubeConfig(), "default")
+	return NewClientSet(clientConfig)
+
+}
+func InitK8s(kubeconfig string,pluginName string) error {
+	clientset,_ := GetK3sClientSet()
+
+
+	pods, err := clientset.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{} )
+	for i:=0 ; i < len(pods.Items); i++ {
+		if pods.Items[i].Status.Phase != "Running" {
+			// log.Info("Waiting for " + pods.Items[i].Name + " to start...")
+			time.Sleep(5 * time.Second)
+		} 
+
+	}
+	if err != nil {
+		log.Error(err)
+	}	
+
+return nil
+}
 

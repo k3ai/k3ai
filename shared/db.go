@@ -257,3 +257,17 @@ func SelectPlugin(pluginName string) (pluginType string, pluginUrl string) {
 
 	return pluginType, pluginUrl
 }
+
+func RegisterCluster(pluginName string) (pluginType string, pluginUrl string) {
+	homeDir,_ := os.UserHomeDir()
+	dbPath := homeDir + "/" + homeK3ai + "/" + "k3ai.db"
+	db, _ := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
+	query := "SELECT type,url FROM plugins WHERE name='" + pluginName +"';"
+	row := db.QueryRow(query,pluginName)
+	err := row.Scan(&pluginType,&pluginUrl)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return pluginType, pluginUrl
+}

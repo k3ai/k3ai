@@ -26,13 +26,13 @@ Through the apply command a user may have a certain plugin deployed on the targe
 		pluginType, pluginUrl := utils.SelectPlugin(strings.ToLower(args[0]))
 
 		if pluginType == "Infra" {
-
+			log.Info("Cluster up, waiting for remaining services to start...")
 			initialize.InfraDeployment(pluginUrl,args[0])
 		} else if pluginType == "Bundle" {
-
 			initialize.BundlesDeployment()
 		} else {
 			initialize.AppsDeployment(pluginUrl,args[0])
+			log.Info("plugin installed...")
 		}
 
 
@@ -43,26 +43,6 @@ Through the apply command a user may have a certain plugin deployed on the targe
 	`,
 
 }
-
-// // deleteCmd represents the version command
-// var deleteCmd = &cobra.Command{
-// 	Use:   "delete",
-// 	Short: "Delete k3ai from the local computer.",
-// 	Run: func(cmd *cobra.Command, args []string) {
-// 		log.Error("Currently Delete function has not been yet implemented...")
-
-// 	},
-// }
-
-// // updateCmd represents the version command
-// var updateCmd = &cobra.Command{
-// 	Use:   "update",
-// 	Short: "Update k3ai on the local computer.",
-// 	Run: func(cmd *cobra.Command, args []string) {
-// 		initialize.Update()
-
-// 	},
-// }
 
 func init() {
 	

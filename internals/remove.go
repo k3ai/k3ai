@@ -17,14 +17,14 @@ func Remove() {
 
 func InfraRemoval(pluginUrl string, pluginName string) {
  
-log.Info("Preparing to install: " + pluginName)
+log.Info("Preparing to remove: " + pluginName)
 data,_ := getContent(pluginUrl)		
 err := yaml.Unmarshal([]byte(data), &dataResults)
 if err != nil {
 	log.Error(err)
 }
 pluginUrl = strings.TrimSuffix(pluginUrl,"k3ai.yaml")
-log.Info("Starting to install " + pluginName)
+log.Info("Starting to remove " + pluginName)
  for i:=0; i < len(dataResults.Resources); i++ {
 	 if strings.HasPrefix(dataResults.Resources[i], "../../") {
 		pluginUrl = strings.TrimSuffix(pluginUrl,pluginName + "/k3ai.yaml")
@@ -52,12 +52,7 @@ log.Info("Starting to install " + pluginName)
 		}
 	 
  	}
-	 if pluginName == "k3s" {
-		 log.Warn("Do not forget to add K3s config file to your KUBECONFIG variable...")
-		 log.Warn("Please copy and paste the following line...")
-		 log.Warn("export KUBECONFIG=/etc/k3s/k3s.yaml")
-		 log.Info("Cluster is up and running enjoy K3ai...")
-	 }
+log.Info(pluginName + " correctly removed.")
 }
 
 func BundlesRemoval() {
