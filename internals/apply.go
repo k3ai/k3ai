@@ -134,7 +134,7 @@ func innerPlugin(pluginName string,urlRoot string) error  {
 			pluginWait := pluginContents.Resources[d].Wait
 			err = utils.InitExec(pluginName,pluginEx,pluginArgs,pluginKube,pluginType,pluginWait)
 			if err != nil {
-				log.Error("this")
+				log.Error(err)
 			}
 			
 		}

@@ -2,9 +2,9 @@ package shared
 
 import (
 	// "os"
-
 	"bufio"
 	"os/exec"
+
 
 	git "github.com/go-git/go-git/v5"
 	"github.com/alefesta/k3ai/log"
@@ -12,13 +12,18 @@ import (
 )
 
 
+
 func InitExec(pluginName string ,pluginEx string ,pluginArgs string,pluginKube string,pluginType string,pluginWait bool) error {
 	
 	if pluginType == "shell" {
 		if pluginEx == "post" {
 			pluginEx = ""
+			exec.Command("/bin/bash","-c",pluginArgs).Output()
+			return nil
+			
 		}
 		cmd := exec.Command("/bin/bash","-c",pluginEx,pluginArgs)
+		
 		r, _ := cmd.StdoutPipe()
 		cmd.Stderr = cmd.Stdout
 		done := make(chan struct{})
@@ -45,7 +50,7 @@ func InitExec(pluginName string ,pluginEx string ,pluginArgs string,pluginKube s
 			log.Error(err)
 		}
 
-		if pluginWait {
+		if pluginWait && pluginEx != ""{
 			err = InitK8s(pluginKube,pluginName)
 			if err != nil {
 				log.Error(err)
