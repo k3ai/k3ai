@@ -38,7 +38,7 @@ func Init(){
 	log.Info("Initialize K3ai...")
 	time.Sleep(500 * time.Millisecond)
 	log.Warning("Creating k3ai folder structure...")
-	// TODO : add viper config
+	data.InitEnv()
 	time.Sleep(500 * time.Millisecond)
 	log.Info("Done | Created .k3ai folder at: " + homeDir + "/" + homeK3ai)
 	time.Sleep(500 * time.Millisecond)
