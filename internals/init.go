@@ -86,6 +86,10 @@ func mkDir() error {
 	// Let's retrieve the list of various plugins and store them as a
 	_,reposApps,_,_:= client.Repositories.GetContents(ctx,repoOwner,repoRoot,repoApps,nil)
 	_,reposInfra,_,_:= client.Repositories.GetContents(ctx,repoOwner,repoRoot,repoInfra,nil)
+	viper.SetConfigName(".env") // name of config file (without extension)
+	viper.SetConfigType("env") // REQUIRED if the config file does not have the extension in the name
+	viper.AddConfigPath("$HOME/.k3ai")  // call multiple times to add many search paths
+	viper.ReadInConfig()
 	if viper.GetBool("COMMUNITY") {
 		_,reposComms,_,_= client.Repositories.GetContents(ctx,repoOwner,repoRoot,repoComms,nil)
 	}
