@@ -8,11 +8,11 @@ import (
 	"net/http"
 
 	"gopkg.in/yaml.v2"
-	"github.com/spf13/viper"
-	"github.com/alefesta/k3ai/log"
+	// "github.com/spf13/viper"
 	_ "github.com/mattn/go-sqlite3"
-	auth "github.com/alefesta/k3ai/shared"
-	data "github.com/alefesta/k3ai/config"
+	utils "github.com/k3ai/shared"
+	data "github.com/k3ai/config"
+	log "github.com/k3ai/log"
 )
 
 const (
@@ -34,28 +34,24 @@ func Init(){
 	var action = "create"
 	homeDir,_ := os.UserHomeDir()
 	err := mkDir()
-	 if err == nil {
-		 log.Info("Initialize K3ai...")
-		 time.Sleep(500 * time.Millisecond)
-		 log.Warning("Creating k3ai folder structure...")
-		 time.Sleep(500 * time.Millisecond)
-		 log.Info("Done | Created .k3ai folder at: " + homeDir + "/" + homeK3ai)
-		 time.Sleep(500 * time.Millisecond)
-		 log.Info("Setting up local database...")
-		 _,err := auth.DbCreate()
-		 if err == nil {
-			time.Sleep(500 * time.Millisecond)
-			log.Info("Done | K3ai DataBase created...")
-			time.Sleep(500 * time.Millisecond)
-			log.Warning("Synchronizing plugin list...")
-			err = pluginContent(action)
-			if err == nil {
-				log.Info("Done | Plugins synchronized")
-			}
-		 }
-	 }
-	 
-
+	_ = log.CheckErrors(err)
+	log.Info("Initialize K3ai...")
+	time.Sleep(500 * time.Millisecond)
+	log.Warning("Creating k3ai folder structure...")
+	// TODO : add viper config
+	time.Sleep(500 * time.Millisecond)
+	log.Info("Done | Created .k3ai folder at: " + homeDir + "/" + homeK3ai)
+	time.Sleep(500 * time.Millisecond)
+	log.Info("Setting up local database...")
+	_,err = utils.DbCreate()
+	_ = log.CheckErrors(err)
+	time.Sleep(500 * time.Millisecond)
+	log.Info("Done | K3ai DataBase created...")
+	time.Sleep(500 * time.Millisecond)
+	log.Warning("Synchronizing plugin list...")
+	err = pluginContent(action)
+	log.CheckErrors(err)
+	log.Info("Done | Plugins synchronized")
 }
 
 func Update(){
@@ -63,9 +59,8 @@ func Update(){
 		log.Info("Updating K3ai plugin list...")
 		time.Sleep(500 * time.Millisecond)
 		err := pluginContent(action)
-		if err == nil {
-			log.Info("Done | Plugins synchronized")
-		}
+		_ = log.CheckErrors(err)
+		log.Info("Done | Plugins synchronized")
 }
 
 
@@ -75,21 +70,7 @@ func mkDir() error {
 	if _, err := os.Stat(homeDir + "/" + homeK3ai); os.IsNotExist(err) {
 		//Create a folder/directory at a full qualified path
 		err := os.Mkdir(homeDir + "/" + homeK3ai, 0755)
-		if err != nil {
-			log.Error(err)
-		}
-	}
-	viper.SetDefault("GITHUB_AUTH_TOKEN","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")
-	viper.SetConfigName(".") // name of config file (without extension)
-	viper.SetConfigType("env") // REQUIRED if the config file does not have the extension in the name
-	viper.AddConfigPath(homeDir + "/" + homeK3ai)   // path to look for the config file in
-	viper.AddConfigPath("$HOME/.k3ai")  // call multiple times to add many search paths
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			viper.SafeWriteConfig()
-		} else {
-			viper.ReadInConfig()
-		}
+		_ = log.CheckErrors(err)
 	}
 	return nil
 }
@@ -97,7 +78,7 @@ func mkDir() error {
 
 //Read the current plugin details
  func pluginContent (action string) error {
-	ctx,client,_ := auth.MainGitHub()
+	ctx,client,_ := utils.MainGitHub()
 	// Let's retrieve the list of various plugins and store them as a
 	_,reposApps,_,_:= client.Repositories.GetContents(ctx,repoOwner,repoRoot,repoApps,nil)
 	_,reposInfra,_,_:= client.Repositories.GetContents(ctx,repoOwner,repoRoot,repoInfra,nil)
@@ -118,9 +99,9 @@ func mkDir() error {
 							log.Error(err)
 						}
 						if action == "create" {
-							auth.FillPluginTables(&dataResults, subContent.GetDownloadURL())
+							utils.FillPluginTables(&dataResults, subContent.GetDownloadURL())
 						} else if action == "update" {
-							auth.UpdatePluginTables(&dataResults, subContent.GetDownloadURL())
+							utils.UpdatePluginTables(&dataResults, subContent.GetDownloadURL())
 						}
 						
 					}
@@ -144,9 +125,9 @@ func mkDir() error {
 					}
 
 					if action == "create" {
-						auth.FillPluginTables(&dataResults, subContent.GetDownloadURL())
+						utils.FillPluginTables(&dataResults, subContent.GetDownloadURL())
 					} else if action == "update" {
-						auth.UpdatePluginTables(&dataResults, subContent.GetDownloadURL())
+						utils.UpdatePluginTables(&dataResults, subContent.GetDownloadURL())
 					}
 				}
 				
@@ -169,9 +150,9 @@ func mkDir() error {
 				}
 
 				if action == "create" {
-					auth.FillPluginTables(&dataResults, subContent.GetDownloadURL())
+					utils.FillPluginTables(&dataResults, subContent.GetDownloadURL())
 				} else if action == "update" {
-					auth.UpdatePluginTables(&dataResults, subContent.GetDownloadURL())
+					utils.UpdatePluginTables(&dataResults, subContent.GetDownloadURL())
 				}
 			}
 			

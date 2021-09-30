@@ -6,9 +6,11 @@ import (
 	"strings"
 	"database/sql"
 
-	"github.com/alefesta/k3ai/log"
+	
 	_ "github.com/mattn/go-sqlite3"
-	data "github.com/alefesta/k3ai/config"
+	log "github.com/k3ai/log"
+	config "github.com/k3ai/config"
+
 )
 
 const (
@@ -108,12 +110,12 @@ func BundleDisplaySQL() (result []string){
 }
 
 //DCreate is used to create a sqllite db un the previously created directory
-func DbCreate() (db *sql.DB,err error){
+func DbCreate() (db *sql.DB, err error){
 	homeDir,_ := os.UserHomeDir()
 	if _, err := os.Stat(homeDir + "/" + homeK3ai + "/" + "k3ai.db"); os.IsNotExist(err) {
 		file, err := os.Create(homeDir + "/" + homeK3ai + "/" + "k3ai.db") // Create SQLite file
 		if err != nil {
-			log.Fatal(err.Error())
+			log.CheckErrors(err)
 		}
 		file.Close()
 		dbPath := homeDir + "/" + homeK3ai + "/" + "k3ai.db"
@@ -124,7 +126,7 @@ func DbCreate() (db *sql.DB,err error){
 			defer sqliteDatabase.Close() // Defer Closing the database
 			sqliteDatabase,err = createTables(sqliteDatabase)
 			if err != nil {
-				log.Error(err)
+				log.CheckErrors(err)
 			}
 			sqliteDatabase.Close()
 			return sqliteDatabase,err
@@ -134,7 +136,7 @@ func DbCreate() (db *sql.DB,err error){
 		log.Error("A previous version of k3ai DB exist in the folder")
 		time.Sleep(1 * time.Second)
 		log.Error("Please run \"k3ai init update\" to overwrite or \"k3ai init delete\" to remove it.")
-		os.Exit(1)
+		os.Exit(0)
 		return nil,err
 	}
 }
@@ -188,7 +190,7 @@ func createTables(db *sql.DB) (dbConn *sql.DB,err error) {
 }
 
 
-func FillPluginTables(data *data.K3ai, url string) error {
+func FillPluginTables(data *config.K3ai, url string) error {
 	homeDir,_ := os.UserHomeDir()
 	dbPath := homeDir + "/" + homeK3ai + "/" + "k3ai.db"
 	db, _ := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
@@ -215,7 +217,7 @@ func FillPluginTables(data *data.K3ai, url string) error {
 }
 
 
-func UpdatePluginTables(data *data.K3ai, url string) error {
+func UpdatePluginTables(data *config.K3ai, url string) error {
 	homeDir,_ := os.UserHomeDir()
 	dbPath := homeDir + "/" + homeK3ai + "/" + "k3ai.db"
 	db, err := sql.Open("sqlite3",dbPath ) // Open the created SQLite File

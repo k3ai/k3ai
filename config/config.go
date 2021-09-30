@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"time"
 
 	"github.com/spf13/viper"
@@ -55,4 +56,26 @@ func readViperConfig(appName string) *viper.Viper {
 	
 
 	return v
+}
+
+
+func InitEnv() {
+	//set the default configurations 
+	viper.SetDefault("GITHUB_TOKEN","")
+	viper.SetDefault("K3AI_REPO","https://github.com/k3ai/plugins")
+	viper.SetDefault("COMMUNITY",true)
+	viper.SetDefault("SYNC", false)
+
+	//set the path and name
+	homeDir,_ := os.UserHomeDir()
+	viper.SetConfigName("config") // name of config file (without extension)
+	viper.SetConfigType("yaml") // REQUIRED if the config file does not have the extension in the name
+	viper.AddConfigPath(homeDir +  "/.k3ai/" )   // path to look for the config file in
+	viper.AddConfigPath("$HOME/.k3ai")  // call multiple times to add many search paths
+
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			viper.SafeWriteConfigAs(homeDir + "/.k3ai/config")
+		}
+	}
 }

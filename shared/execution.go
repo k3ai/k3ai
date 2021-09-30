@@ -7,7 +7,8 @@ import (
 
 
 	git "github.com/go-git/go-git/v5"
-	"github.com/alefesta/k3ai/log"
+	log "github.com/k3ai/log"
+
 	
 )
 

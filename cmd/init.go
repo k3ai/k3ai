@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/alefesta/k3ai/log"
-    initialize "github.com/alefesta/k3ai/internals"
+    internals "github.com/k3ai/internals"
+	log "github.com/k3ai/log"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +20,7 @@ Init has also two sub-commands:
 - update : to update current list of plugins
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		initialize.Init()
+		internals.Init()
 
 	},
 	Example: `
@@ -46,7 +46,7 @@ var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update k3ai on the local computer.",
 	Run: func(cmd *cobra.Command, args []string) {
-		initialize.Update()
+		internals.Update()
 
 	},
 }

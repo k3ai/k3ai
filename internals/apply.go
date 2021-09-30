@@ -4,9 +4,9 @@ import (
 	"github.com/spf13/viper"
 	"strings"
 	"gopkg.in/yaml.v2"
-	"github.com/alefesta/k3ai/log"
-	data "github.com/alefesta/k3ai/config"
-	utils "github.com/alefesta/k3ai/shared"
+	"github.com/k3ai/log"
+	data "github.com/k3ai/config"
+	utils "github.com/k3ai/shared"
 
 	
 )

@@ -1,7 +1,7 @@
 package internals
 
 import (
-	log "github.com/alefesta/k3ai/log"
+	log "github.com/k3ai/log"
 )
 
 func Add() string {

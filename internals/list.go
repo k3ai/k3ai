@@ -1,11 +1,11 @@
 package internals
 
 import (
-    "github.com/alefesta/k3ai/log"
+    "github.com/k3ai/log"
 	"github.com/jedib0t/go-pretty/v6/text"
 	"os"
 	"github.com/jedib0t/go-pretty/v6/table"
-    callDB "github.com/alefesta/k3ai/shared"
+    callDB "github.com/k3ai/shared"
 )
 func List(result string)  {
     if result == "infra" {

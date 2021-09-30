@@ -3,9 +3,9 @@ package cmd
 import (
 	"os"
 	"strings"
-	"github.com/alefesta/k3ai/log"
-    initialize "github.com/alefesta/k3ai/internals"
-	utils "github.com/alefesta/k3ai/shared"
+	log "github.com/k3ai/log"
+    internals "github.com/k3ai/internals"
+	shared "github.com/k3ai/shared"
 	"github.com/spf13/cobra"
 )
 
@@ -23,16 +23,16 @@ Through the remove command a user may have a certain plugin removed from the tar
 			os.Exit(0)
 		}
 		
-		pluginType, pluginUrl := utils.SelectPlugin(strings.ToLower(args[0]))
+		pluginType, pluginUrl := shared.SelectPlugin(strings.ToLower(args[0]))
 
 		if pluginType == "Infra" {
 
-			initialize.InfraRemoval(pluginUrl,args[0])
+			internals.InfraRemoval(pluginUrl,args[0])
 		} else if pluginType == "Bundle" {
 
-			initialize.BundlesRemoval()
+			internals.BundlesRemoval()
 		} else {
-			initialize.Remove()
+			internals.Remove()
 		}
 
 
@@ -59,7 +59,7 @@ Through the remove command a user may have a certain plugin removed from the tar
 // 	Use:   "update",
 // 	Short: "Update k3ai on the local computer.",
 // 	Run: func(cmd *cobra.Command, args []string) {
-// 		initialize.Update()
+// 		internals.Update()
 
 // 	},
 // }

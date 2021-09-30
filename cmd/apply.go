@@ -3,10 +3,10 @@ package cmd
 import (
 	"os"
 	"strings"
-	"github.com/alefesta/k3ai/log"
-    initialize "github.com/alefesta/k3ai/internals"
-	utils "github.com/alefesta/k3ai/shared"
 	"github.com/spf13/cobra"
+	internals "github.com/k3ai/internals"
+	log "github.com/k3ai/log"
+	shared "github.com/k3ai/shared"
 )
 
 // applyCmd represents the version command
@@ -23,15 +23,15 @@ Through the apply command a user may have a certain plugin deployed on the targe
 			os.Exit(0)
 		}
 		
-		pluginType, pluginUrl := utils.SelectPlugin(strings.ToLower(args[0]))
+		pluginType, pluginUrl := shared.SelectPlugin(strings.ToLower(args[0]))
 
 		if pluginType == "Infra" {
 			log.Info("Cluster up, waiting for remaining services to start...")
-			initialize.InfraDeployment(pluginUrl,args[0])
+			internals.InfraDeployment(pluginUrl,args[0])
 		} else if pluginType == "Bundle" {
-			initialize.BundlesDeployment()
+			internals.BundlesDeployment()
 		} else {
-			initialize.AppsDeployment(pluginUrl,args[0])
+			internals.AppsDeployment(pluginUrl,args[0])
 			log.Info("plugin installed...")
 		}
 
@@ -45,10 +45,6 @@ Through the apply command a user may have a certain plugin deployed on the targe
 }
 
 func init() {
-	
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	// rootCmd.Flags().Bool("list",false,"test")
 	rootCmd.AddCommand(applyCmd)
 	// initCmd.AddCommand(deleteCmd,updateCmd)
 }

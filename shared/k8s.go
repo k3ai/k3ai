@@ -2,12 +2,12 @@ package shared
 
 import (
 
-	"github.com/alefesta/k3ai/log"
 	"time"
 	"context"
 	"path/filepath"
 
 	"github.com/pkg/errors"
+	log "github.com/k3ai/log"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	version "github.com/alefesta/k3ai/internals"
+	internals "github.com/k3ai/internals"
 	"github.com/spf13/cobra"
 )
 
@@ -13,11 +13,11 @@ var versionCmd = &cobra.Command{
 	Long:  `All software has versions. This is generated code example`,
 	Run: func(cmd *cobra.Command, args []string) {
 				
-		fmt.Println("Build Date:", version.BuildDate)
-		fmt.Println("Git Commit:", version.GitCommit)
-		fmt.Println("Version:", version.Version)
-		fmt.Println("Go Version:", version.GoVersion)
-		fmt.Println("OS / Arch:", version.OsArch)
+		fmt.Println("Build Date:", internals.BuildDate)
+		fmt.Println("Git Commit:", internals.GitCommit)
+		fmt.Println("Version:", internals.Version)
+		fmt.Println("Go Version:", internals.GoVersion)
+		fmt.Println("OS / Arch:", internals.OsArch)
 	},
 }
 

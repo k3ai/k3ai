@@ -3,7 +3,7 @@ package log
 import (
 	"os"
 	"github.com/sirupsen/logrus"
-	"github.com/alefesta/k3ai/config"
+	"github.com/k3ai/config"
 )
 
 // Logger defines a set of methods for writing application logs. Derived from and

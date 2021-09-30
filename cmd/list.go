@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	// "github.com/alefesta/k3ai/log"
-	list "github.com/alefesta/k3ai/internals"
 	"github.com/spf13/cobra"
+	internals "github.com/k3ai/internals"
 )
 
 // listCmd represents the version command
@@ -20,7 +19,7 @@ List command  always shows ALL options but may be also used along with --tag fol
 NOTE: Filter options are mutally exclusive so cannot be used together`,
 	Run: func(cmd *cobra.Command, args []string) {
 		res,_ := cmd.Flags().GetString("type")
-		list.List(res)
+		internals.List(res)
 
 	},
 	Example: `

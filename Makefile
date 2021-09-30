@@ -30,7 +30,7 @@ help:
 build:
 	@echo "building ${BIN_NAME} ${VERSION}"
 	@echo "GOPATH=${GOPATH}"
-	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -ldflags "-w -s -X github.com/alefesta/k3ai/version.GitCommit=${GIT_COMMIT}${GIT_DIRTY} -X github.com/alefesta/k3ai/version.BuildDate=${BUILD_DATE}" -o bin/${BIN_NAME}
+	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -ldflags "-w -s -X github.com/k3ai/version.GitCommit=${GIT_COMMIT}${GIT_DIRTY} -X github.com/k3ai/version.BuildDate=${BUILD_DATE}" -o bin/${BIN_NAME}
 
 get-deps:
 	dep ensure

@@ -2,7 +2,7 @@ package main
 
 import (
 	
-	"github.com/alefesta/k3ai/cmd"
+	"github.com/k3ai/cmd"
 )
 
 func main() {
