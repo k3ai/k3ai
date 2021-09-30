@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"gopkg.in/yaml.v2"
+	"github.com/spf13/viper"
 	"github.com/alefesta/k3ai/log"
 	_ "github.com/mattn/go-sqlite3"
 	auth "github.com/alefesta/k3ai/shared"
@@ -76,6 +77,18 @@ func mkDir() error {
 		err := os.Mkdir(homeDir + "/" + homeK3ai, 0755)
 		if err != nil {
 			log.Error(err)
+		}
+	}
+	viper.SetDefault("GITHUB_AUTH_TOKEN","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")
+	viper.SetConfigName(".") // name of config file (without extension)
+	viper.SetConfigType("env") // REQUIRED if the config file does not have the extension in the name
+	viper.AddConfigPath(homeDir + "/" + homeK3ai)   // path to look for the config file in
+	viper.AddConfigPath("$HOME/.k3ai")  // call multiple times to add many search paths
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			viper.SafeWriteConfig()
+		} else {
+			viper.ReadInConfig()
 		}
 	}
 	return nil
