@@ -190,15 +190,22 @@ func createTables(db *sql.DB) (dbConn *sql.DB,err error) {
 }
 
 
-func FillPluginTables(data *config.K3ai, url string) error {
+func FillPluginTables(data *config.K3ai, url string, comm string) error {
+	var tag string
 	homeDir,_ := os.UserHomeDir()
 	dbPath := homeDir + "/" + homeK3ai + "/" + "k3ai.db"
 	db, _ := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
 	defer db.Close()
+	
 	name := strings.ToLower(data.Metadata.Name)
 	desc := strings.ToLower(data.Metadata.Desc)
 	ver := strings.ToLower(data.Metadata.Version)
-	tag  := strings.ToLower(data.Metadata.Tag)
+	if comm == "" {
+		tag  = strings.ToLower(data.Metadata.Tag)
+	} else if comm == "comm" {
+		tag  = "community"
+	}
+	
 	pluginType := data.Kind
 	urlDB := url
 	
@@ -217,7 +224,8 @@ func FillPluginTables(data *config.K3ai, url string) error {
 }
 
 
-func UpdatePluginTables(data *config.K3ai, url string) error {
+func UpdatePluginTables(data *config.K3ai, url string, comm string) error {
+	var tag string
 	homeDir,_ := os.UserHomeDir()
 	dbPath := homeDir + "/" + homeK3ai + "/" + "k3ai.db"
 	db, err := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
@@ -228,7 +236,11 @@ func UpdatePluginTables(data *config.K3ai, url string) error {
 	name := strings.ToLower(data.Metadata.Name)
 	desc := strings.ToLower(data.Metadata.Desc)
 	ver := strings.ToLower(data.Metadata.Version)
-	tag  := strings.ToLower(data.Metadata.Tag)
+	if comm == "" {
+		tag  = strings.ToLower(data.Metadata.Tag)
+	} else if comm == "comm" {
+		tag  = "community"
+	}
 	pluginType := data.Kind
 	urlDB := url
 	

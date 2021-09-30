@@ -9,17 +9,19 @@ import (
 
 	"gopkg.in/yaml.v2"
 	// "github.com/spf13/viper"
-	_ "github.com/mattn/go-sqlite3"
-	utils "github.com/k3ai/shared"
+	"github.com/google/go-github/v39/github"
 	data "github.com/k3ai/config"
 	log "github.com/k3ai/log"
+	utils "github.com/k3ai/shared"
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/spf13/viper"
 )
 
 const (
 	repoOwner = "k3ai"
 	repoRoot = "plugins"
 	repoApps = "apps"
-	repoComm = "common"
+	repoComms = "community"
 	repoInfra = "infra"
 	repoBundle = "bundles"
 	homeK3ai = ".k3ai"
@@ -38,7 +40,6 @@ func Init(){
 	log.Info("Initialize K3ai...")
 	time.Sleep(500 * time.Millisecond)
 	log.Warning("Creating k3ai folder structure...")
-	data.InitEnv()
 	time.Sleep(500 * time.Millisecond)
 	log.Info("Done | Created .k3ai folder at: " + homeDir + "/" + homeK3ai)
 	time.Sleep(500 * time.Millisecond)
@@ -47,6 +48,8 @@ func Init(){
 	_ = log.CheckErrors(err)
 	time.Sleep(500 * time.Millisecond)
 	log.Info("Done | K3ai DataBase created...")
+	data.InitEnv()
+	viper.AutomaticEnv()
 	time.Sleep(500 * time.Millisecond)
 	log.Warning("Synchronizing plugin list...")
 	err = pluginContent(action)
@@ -79,10 +82,14 @@ func mkDir() error {
 //Read the current plugin details
  func pluginContent (action string) error {
 	ctx,client,_ := utils.MainGitHub()
+	var reposComms []*github.RepositoryContent
 	// Let's retrieve the list of various plugins and store them as a
 	_,reposApps,_,_:= client.Repositories.GetContents(ctx,repoOwner,repoRoot,repoApps,nil)
 	_,reposInfra,_,_:= client.Repositories.GetContents(ctx,repoOwner,repoRoot,repoInfra,nil)
-	// _,reposComms,_,_:= client.Repositories.GetContents(ctx,repoOwner,repoRoot,repoComm,nil)
+	if viper.GetBool("COMMUNITY") {
+		_,reposComms,_,_= client.Repositories.GetContents(ctx,repoOwner,repoRoot,repoComms,nil)
+	}
+
 	_,reposBundles,_,_:= client.Repositories.GetContents(ctx,repoOwner,repoRoot,repoBundle,nil)
 
 	for _,repoApp := range reposApps {
@@ -99,9 +106,9 @@ func mkDir() error {
 							log.Error(err)
 						}
 						if action == "create" {
-							utils.FillPluginTables(&dataResults, subContent.GetDownloadURL())
-						} else if action == "update" {
-							utils.UpdatePluginTables(&dataResults, subContent.GetDownloadURL())
+							utils.FillPluginTables(&dataResults, subContent.GetDownloadURL(),"")
+							} else if action == "update" {
+								utils.UpdatePluginTables(&dataResults, subContent.GetDownloadURL(),"")
 						}
 						
 					}
@@ -125,9 +132,9 @@ func mkDir() error {
 					}
 
 					if action == "create" {
-						utils.FillPluginTables(&dataResults, subContent.GetDownloadURL())
-					} else if action == "update" {
-						utils.UpdatePluginTables(&dataResults, subContent.GetDownloadURL())
+						utils.FillPluginTables(&dataResults, subContent.GetDownloadURL(),"")
+						} else if action == "update" {
+							utils.UpdatePluginTables(&dataResults, subContent.GetDownloadURL(),"")
 					}
 				}
 				
@@ -150,9 +157,34 @@ func mkDir() error {
 				}
 
 				if action == "create" {
-					utils.FillPluginTables(&dataResults, subContent.GetDownloadURL())
+					utils.FillPluginTables(&dataResults, subContent.GetDownloadURL(),"")
 				} else if action == "update" {
-					utils.UpdatePluginTables(&dataResults, subContent.GetDownloadURL())
+					utils.UpdatePluginTables(&dataResults, subContent.GetDownloadURL(),"")
+				}
+			}
+			
+		}
+	}
+}
+
+for _,repoComm := range reposComms {
+	if repoComm.GetType() == "dir" && repoComm.GetName() != "template"  {
+		subRoot := repoComm.GetPath()
+		_,subContents,_,_ := client.Repositories.GetContents(ctx,repoOwner,repoRoot,subRoot,nil)
+		for _,subContent := range subContents {
+			if subContent.GetType() == "file" && subContent.GetName() == k3aiFile {
+				url := subContent.GetDownloadURL()
+				data,_ := getContent(url)
+			
+				err := yaml.Unmarshal([]byte(data), &dataResults)
+				if err != nil {
+					log.Error(err)
+				}
+
+				if action == "create" {
+					utils.FillPluginTables(&dataResults, subContent.GetDownloadURL(),"comm")
+				} else if action == "update" {
+					utils.UpdatePluginTables(&dataResults, subContent.GetDownloadURL(),"comm")
 				}
 			}
 			
