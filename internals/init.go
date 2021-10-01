@@ -8,13 +8,14 @@ import (
 	"net/http"
 
 	"gopkg.in/yaml.v2"
-	// "github.com/spf13/viper"
+	"github.com/spf13/viper"
 	"github.com/google/go-github/v39/github"
+	"github.com/briandowns/spinner"
+	_ "github.com/mattn/go-sqlite3"
 	data "github.com/k3ai/config"
 	log "github.com/k3ai/log"
 	utils "github.com/k3ai/shared"
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/spf13/viper"
+	
 )
 
 const (
@@ -33,13 +34,19 @@ var dataResults = data.K3ai{}
 // var db *sql.DB
 //Init initialize the k3ai tool. 
 func Init(){
+	icon := []string{"⛏️ "}
+	s := spinner.New(icon, 100*time.Millisecond)
+	// s.Color("green")
+	s.Start()
+	time.Sleep(500 * time.Millisecond)
 	var action = "create"
 	homeDir,_ := os.UserHomeDir()
 	err := mkDir()
 	_ = log.CheckErrors(err)
-	log.Info("Initialize K3ai...")
+	log.Info("Initialize K3ai...")	
+	// s.Prefix = "Initialize K3ai:"
 	time.Sleep(500 * time.Millisecond)
-	log.Warning("Creating k3ai folder structure...")
+	log.Info("Creating k3ai folder structure...")
 	time.Sleep(500 * time.Millisecond)
 	log.Info("Done | Created .k3ai folder at: " + homeDir + "/" + homeK3ai)
 	time.Sleep(500 * time.Millisecond)
@@ -51,10 +58,11 @@ func Init(){
 	data.InitEnv()
 	viper.AutomaticEnv()
 	time.Sleep(500 * time.Millisecond)
-	log.Warning("Synchronizing plugin list...")
+	log.Info("Synchronizing plugin list...")
 	err = pluginContent(action)
 	log.CheckErrors(err)
 	log.Info("Done | Plugins synchronized")
+	s.Stop()
 }
 
 func Update(){

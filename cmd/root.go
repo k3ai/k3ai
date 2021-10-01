@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"os"
 	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
 )
 
@@ -13,20 +14,20 @@ var rootCmd = &cobra.Command{
 	Use:   "k3ai [flags]",
 	Short: "A simple way to learn and use Artificial Intelligence.",
 	Long: `
-	What is K3ai?
+K3ai allow anyone to start with Artificial Intelligence.
+Like a cooking recipe, you select the ingredients we take care of everything else.
 
-	K3ai allow anyone to start with Artificial Intelligence.
-	You focus on your needs we take care of everything you need.
-	
-	How it works?
-	
-	Like a cooking recipe, you select the ingredients we take care of everything else.
-	
-	- Infrastructure deployment
-	- PreRequisites and PosRequisites
-	- AI Tools deployment
-	
-	https://github.com/k3ai`,
+The logic is super simple, check out our documentation at: https://k3ai.github.io/docs
+
+Do not forget to add a star to the project: https://github.com/k3ai`,
+	Example:`
+k3ai create cluster --type k3s --name mycluster
+k3ai delete cluster --name mycluster
+
+k3ai add <plugin name> --to mycluster
+k3ai add <plugin name>  --to <cluster group name or config file>
+
+k3ai remove <plugin name> --from mycluster (or the cluster group or config file)`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//      Run: func(cmd *cobra.Command, args []string) { },
@@ -43,10 +44,5 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize()
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	rootCmd.DisableFlagParsing = false
 
 }

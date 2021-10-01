@@ -9,14 +9,19 @@ import (
 	shared "github.com/k3ai/shared"
 )
 
-// applyCmd represents the version command
-var applyCmd = &cobra.Command{
-	Use:   "apply",
-	Short: "Apply a K3ai plugin.",
+//addCmd represents the version command
+var addCmd = &cobra.Command{
+	Use:   "add",
+	Short: "Add a K3ai plugin.",
 	Long:  `
-Apply is meant to deploy a specific kind of plugin: infrastructure,application or bundle.
+Add is meant to deploy a specific plugin: application or bundle.
 Through the apply command a user may have a certain plugin deployed on the target device.
-`,
+`,	
+	Example:`
+k3ai add <plugin name> --to <cluster name>
+k3ai add <plugin name> --to <cluster group name>
+k3ai add <plugin name> --to <config file>	
+	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) <= 0 {
 			log.Warn("No plugin has been indicated. The right form is: k3ai apply <plugin-name>")
@@ -37,14 +42,10 @@ Through the apply command a user may have a certain plugin deployed on the targe
 
 
 	},
-	Example: `
-	k3ai apply		//shows all the possible combination of the command apply
-	k3ai apply k3s	//apply the plugin with name "k3s"
-	`,
 
 }
 
 func init() {
-	rootCmd.AddCommand(applyCmd)
-	// initCmd.AddCommand(deleteCmd,updateCmd)
+	rootCmd.AddCommand(addCmd)
+	addCmd.Flags().String("to","","Where to install the plugin: a single cluster, a group or using a config file [local or remote]")
 }

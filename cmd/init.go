@@ -2,11 +2,10 @@ package cmd
 
 import (
     internals "github.com/k3ai/internals"
-	log "github.com/k3ai/log"
 	"github.com/spf13/cobra"
 )
 
-// initCmd represents the version command
+//initCmd represents the version command
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize k3ai on the local computer.",
@@ -24,38 +23,11 @@ Init has also two sub-commands:
 
 	},
 	Example: `
-	k3ai init		//initialize a local copy of all possible options
-	k3ai init update	//update current list of options
-	k3ai init delete	//delete current configuration of k3ai
+	k3ai init		//Will initialize K3ai on the local computer.
 	`,
 
 }
 
-// deleteCmd represents the version command
-var deleteCmd = &cobra.Command{
-	Use:   "delete",
-	Short: "Delete k3ai from the local computer.",
-	Run: func(cmd *cobra.Command, args []string) {
-		log.Error("Currently Delete function has not been yet implemented...")
-
-	},
-}
-
-// updateCmd represents the version command
-var updateCmd = &cobra.Command{
-	Use:   "update",
-	Short: "Update k3ai on the local computer.",
-	Run: func(cmd *cobra.Command, args []string) {
-		internals.Update()
-
-	},
-}
-
 func init() {
-	
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	// rootCmd.Flags().Bool("list",false,"test")
 	rootCmd.AddCommand(initCmd)
-	initCmd.AddCommand(deleteCmd,updateCmd)
 }

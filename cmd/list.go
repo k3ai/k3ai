@@ -33,14 +33,8 @@ NOTE: Filter options are mutally exclusive so cannot be used together`,
 
 func init() {
 	
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	// rootCmd.Flags().Bool("list",false,"test")
 	rootCmd.AddCommand(listCmd)
-	// listCmd.AddCommand(tagCmd)
 	listCmd.Flags().String("type","","Filter list of supported options by value. Possible values are: infra,apps,bundles")
-	// tagCmd.Flags().String("infra","","Filter list of supported infra options by value.")
-	// tagCmd.AddCommand(infraCmd)
-	// tagCmd.AddCommand(appsCmd)
-	// tagCmd.AddCommand(bundlesCmd)
+	listCmd.Flags().String("tag","","Filter list of supported options by tag based on plugins.")
+	listCmd.Flags().String("cluster","","Filter list of active plugin by cluster.")
 }
