@@ -7,6 +7,7 @@ import (
 	log "github.com/k3ai/log"
     internals "github.com/k3ai/internals"
 	shared "github.com/k3ai/shared"
+	utils "github.com/k3ai/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -37,7 +38,7 @@ create is meant to create a cluster based on the cluster name type (i.e: k3s or 
 		clusterType,_ := cmd.Flags().GetString("type")
 		clusterName,_ := cmd.Flags().GetString("name")
 		if clusterName == "" {
-			//TODO: generate cluster name
+			clusterName = utils.GenerateName()
 		}
 
 		icon := []string{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"}
@@ -48,8 +49,21 @@ create is meant to create a cluster based on the cluster name type (i.e: k3s or 
 		_, clusterUrl, err := shared.SelectPlugin(strings.ToLower(clusterType))
 		_ = log.CheckErrors(err)
 		time.Sleep(500 * time.Millisecond)
+		s.Stop()
 		err = internals.Cluster(clusterUrl,clusterName,clusterType)
 		_ = log.CheckErrors(err)
+		s.Restart()
+		time.Sleep(500 * time.Millisecond)
+		if clusterType == "k3s" {
+			log.Warn("Do not forget to add K3s config file to your KUBECONFIG variable...")
+			time.Sleep(500 * time.Millisecond)
+			log.Warn("Please copy and paste the following line...")
+			time.Sleep(500 * time.Millisecond)
+			log.Warn("export KUBECONFIG=/etc/rancher/k3s/k3s.yaml")
+			time.Sleep(500 * time.Millisecond)
+		 }
+		time.Sleep(500 * time.Millisecond)
+		log.Info("Cluster " + clusterName + " succefully installed...")
 	},
 	Example: `
 k3ai create	<plugin name> --type <cluster type> --name <cluster name>
