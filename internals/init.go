@@ -34,26 +34,28 @@ var dataResults = data.K3ai{}
 // var db *sql.DB
 //Init initialize the k3ai tool. 
 func Init(){
-	icon := []string{"⛏️ "}
-	s := spinner.New(icon, 100*time.Millisecond)
-	// s.Color("green")
+	var action = "create"
+	icon := []string{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"}
+	s := spinner.New(icon, 100*time.Millisecond,spinner.WithColor("fgHiYellow"))
 	s.Start()
 	time.Sleep(500 * time.Millisecond)
-	var action = "create"
 	homeDir,_ := os.UserHomeDir()
 	err := mkDir()
 	_ = log.CheckErrors(err)
 	log.Info("Initialize K3ai...")	
-	// s.Prefix = "Initialize K3ai:"
 	time.Sleep(500 * time.Millisecond)
 	log.Info("Creating k3ai folder structure...")
 	time.Sleep(500 * time.Millisecond)
-	log.Info("Done | Created .k3ai folder at: " + homeDir + "/" + homeK3ai)
+	log.Info("Created .k3ai folder at: " + homeDir + "/" + homeK3ai)
 	time.Sleep(500 * time.Millisecond)
 	log.Info("Setting up local database...")
+	s.Stop()
 	_,err = utils.DbCreate()
+	time.Sleep(500 * time.Millisecond)
+	s.Restart()
 	_ = log.CheckErrors(err)
 	time.Sleep(500 * time.Millisecond)
+	s.Color("yellow")
 	log.Info("Done | K3ai DataBase created...")
 	data.InitEnv()
 	viper.AutomaticEnv()

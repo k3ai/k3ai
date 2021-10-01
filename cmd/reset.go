@@ -2,11 +2,10 @@ package cmd
 
 import (
 	"os"
-	"strings"
+	"time"
 	log "github.com/k3ai/log"
-    internals "github.com/k3ai/internals"
-	shared "github.com/k3ai/shared"
 	"github.com/spf13/cobra"
+	"github.com/briandowns/spinner"
 )
 
 // resetCmd represents the version command
@@ -14,27 +13,25 @@ var resetCmd = &cobra.Command{
 	Use:   "reset",
 	Short: "Reset K3ai.",
 	Long:  `
-Reset completly uninstall k3ai from the system.
+Reset will uninstall k3ai from the system.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) <= 0 {
-			log.Warn("No plugin has been indicated. The right form is: k3ai apply <plugin-name>")
-			os.Exit(0)
+		//TODO: Remove any local cluster before remove binary
+		//BODY: In order to clean up the system we should have a script 
+		// that manage the logic
+		icon := []string{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"}
+		s := spinner.New(icon, 100*time.Millisecond,spinner.WithColor("fgHiYellow"))
+		s.Start()
+		time.Sleep(1 * time.Second)
+		log.Info("Removing K3ai from the system...")
+		time.Sleep(1 * time.Second)
+		homeDir,_ := os.UserHomeDir()
+		err := os.RemoveAll(homeDir + "/.k3ai")
+		time.Sleep(1 * time.Second)
+		log.Info("K3ai successfully removed.Have a nice day!")
+		if err != nil {
+			log.Error(err)
 		}
-		
-		pluginType, pluginUrl := shared.SelectPlugin(strings.ToLower(args[0]))
-
-		if pluginType == "Infra" {
-
-			internals.InfraRemoval(pluginUrl,args[0])
-		} else if pluginType == "Bundle" {
-
-			internals.BundlesRemoval()
-		} else {
-			internals.Remove()
-		}
-
-
 	},
 	Example: `
 k3ai reset
@@ -45,6 +42,5 @@ k3ai reset
 func init() {
 	
 	rootCmd.AddCommand(resetCmd)
-	
 
 }

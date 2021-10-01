@@ -23,7 +23,8 @@ Through the remove command a user may have a certain plugin removed from the tar
 			os.Exit(0)
 		}
 		
-		pluginType, pluginUrl := shared.SelectPlugin(strings.ToLower(args[0]))
+		pluginType, pluginUrl,err := shared.SelectPlugin(strings.ToLower(args[0]))
+		_ = log.CheckErrors(err)
 
 		if pluginType == "Infra" {
 

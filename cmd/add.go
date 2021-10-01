@@ -28,12 +28,10 @@ k3ai add <plugin name> --to <config file>
 			os.Exit(0)
 		}
 		
-		pluginType, pluginUrl := shared.SelectPlugin(strings.ToLower(args[0]))
+		pluginType, pluginUrl,err := shared.SelectPlugin(strings.ToLower(args[0]))
+		_ = log.CheckErrors(err)
 
-		if pluginType == "Infra" {
-			log.Info("Cluster up, waiting for remaining services to start...")
-			internals.InfraDeployment(pluginUrl,args[0])
-		} else if pluginType == "Bundle" {
+		 if pluginType == "Bundle" {
 			internals.BundlesDeployment()
 		} else {
 			internals.AppsDeployment(pluginUrl,args[0])

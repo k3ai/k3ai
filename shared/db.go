@@ -5,6 +5,7 @@ import (
 	"time"
 	"strings"
 	"database/sql"
+	"github.com/briandowns/spinner"
 
 	
 	_ "github.com/mattn/go-sqlite3"
@@ -133,9 +134,16 @@ func DbCreate() (db *sql.DB, err error){
 		}
 		
 	} else {
+		icon := []string{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"}
+		s := spinner.New(icon,100*time.Millisecond,spinner.WithColor("fgHiRed"))
+		s.Stop()
+		s.Color("fgHiRed")
+		s.Start()
+		time.Sleep(500 * time.Millisecond)
 		log.Error("A previous version of k3ai DB exist in the folder")
 		time.Sleep(1 * time.Second)
 		log.Error("Please run \"k3ai init update\" to overwrite or \"k3ai init delete\" to remove it.")
+		s.Stop()
 		os.Exit(0)
 		return nil,err
 	}
@@ -258,18 +266,19 @@ func UpdatePluginTables(data *config.K3ai, url string, comm string) error {
 	return nil
 }
 
-func SelectPlugin(pluginName string) (pluginType string, pluginUrl string) {
+func SelectPlugin(pluginName string) (pluginType string, pluginUrl string, err error) {
 	homeDir,_ := os.UserHomeDir()
 	dbPath := homeDir + "/" + homeK3ai + "/" + "k3ai.db"
 	db, _ := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
 	query := "SELECT type,url FROM plugins WHERE name='" + pluginName +"';"
 	row := db.QueryRow(query,pluginName)
-	err := row.Scan(&pluginType,&pluginUrl)
+	err = row.Scan(&pluginType,&pluginUrl)
 	if err != nil {
 		log.Error(err)
+		return 
 	}
 
-	return pluginType, pluginUrl
+	return pluginType, pluginUrl, nil
 }
 
 func RegisterCluster(pluginName string) (pluginType string, pluginUrl string) {

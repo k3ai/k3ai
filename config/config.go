@@ -63,22 +63,24 @@ func readViperConfig(appName string) *viper.Viper {
 
 
 func InitEnv() {
-	//set the default configurations 
-	fmt.Println("Missing GitHub authentication token, please paste it here: ")
-	bytePassword, _:= term.ReadPassword(int(syscall.Stdin))
-	token := string(bytePassword)
-
-	viper.SetDefault("GITHUB_AUTH_TOKEN",token)
-	viper.SetDefault("K3AI_REPO","https://github.com/k3ai/plugins")
-	viper.SetDefault("COMMUNITY",false)
-	viper.SetDefault("SYNC", false)
-
 	//set the path and name
 	homeDir,_ := os.UserHomeDir()
 	viper.SetConfigName(".env") // name of config file (without extension)
 	viper.SetConfigType("env") // REQUIRED if the config file does not have the extension in the name
 	viper.AddConfigPath(homeDir +  "/.k3ai/" )   // path to look for the config file in
 	viper.AddConfigPath("$HOME/.k3ai")  // call multiple times to add many search paths
+	viper.ReadInConfig()
+	if viper.GetString("GITHUB_AUTH_TOKEN") == "" {
+		//set the default configurations 
+		fmt.Println("Missing GitHub authentication token, please paste it here: ")
+		bytePassword, _:= term.ReadPassword(int(syscall.Stdin))
+		token := string(bytePassword)
+		viper.SetDefault("GITHUB_AUTH_TOKEN",token)
+	}
+
+	viper.SetDefault("K3AI_REPO","https://github.com/k3ai/plugins")
+	viper.SetDefault("COMMUNITY",false)
+	viper.SetDefault("SYNC", false)
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {

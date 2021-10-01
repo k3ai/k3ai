@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"os"
+	"time"
 	"strings"
+	"github.com/briandowns/spinner"
 	log "github.com/k3ai/log"
     internals "github.com/k3ai/internals"
 	shared "github.com/k3ai/shared"
@@ -19,26 +20,6 @@ var createCmd = &cobra.Command{
 create is meant to uninstall a specific kind of plugin: application or bundle.
 Through the create command a user may have a certain plugin created from the target device.
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) <= 0 {
-			log.Warn("No plugin has been indicated. The right form is: k3ai apply <plugin-name>")
-			os.Exit(0)
-		}
-		
-		pluginType, pluginUrl := shared.SelectPlugin(strings.ToLower(args[0]))
-
-		if pluginType == "Infra" {
-
-			internals.InfraRemoval(pluginUrl,args[0])
-		} else if pluginType == "Bundle" {
-
-			internals.BundlesRemoval()
-		} //else {
-			// internals.create()
-		//}
-
-
-	},
 	Example: `
 k3ai create	<plugin name> --type <cluster type> --name <cluster name>
 	`,
@@ -50,28 +31,25 @@ var clusterCmd = &cobra.Command{
 	Use:   "cluster",
 	Short: "create a K3ai plugin.",
 	Long:  `
-create is meant to uninstall a specific kind of plugin: application or bundle.
-Through the create command a user may have a certain plugin created from the target device.
+create is meant to create a cluster based on the cluster name type (i.e: k3s or eksa)
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) <= 0 {
-			log.Warn("No plugin has been indicated. The right form is: k3ai apply <plugin-name>")
-			os.Exit(0)
+		clusterType,_ := cmd.Flags().GetString("type")
+		clusterName,_ := cmd.Flags().GetString("name")
+		if clusterName == "" {
+			//TODO: generate cluster name
 		}
-		
-		pluginType, pluginUrl := shared.SelectPlugin(strings.ToLower(args[0]))
 
-		if pluginType == "Infra" {
-
-			internals.InfraRemoval(pluginUrl,args[0])
-		} else if pluginType == "Bundle" {
-
-			internals.BundlesRemoval()
-		} //else {
-			// internals.create()
-		//}
-
-
+		icon := []string{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"}
+		s := spinner.New(icon, 100*time.Millisecond,spinner.WithColor("fgHiYellow"))
+		s.Start()
+		time.Sleep(500 * time.Millisecond)
+		log.Info("Starting cluster installation...")
+		_, clusterUrl, err := shared.SelectPlugin(strings.ToLower(clusterType))
+		_ = log.CheckErrors(err)
+		time.Sleep(500 * time.Millisecond)
+		err = internals.Cluster(clusterUrl,clusterName,clusterType)
+		_ = log.CheckErrors(err)
 	},
 	Example: `
 k3ai create	<plugin name> --type <cluster type> --name <cluster name>
@@ -83,4 +61,5 @@ func init() {
 	createCmd.AddCommand(clusterCmd)
 	clusterCmd.Flags().String("type","","The type of cluster to create as listed through k3ai list --type infra")
 	clusterCmd.Flags().String("name","","The name of the cluster. This is the name you will refer to not necessarly the real cluster name. If omitted a generated name will be used.")
+	clusterCmd.MarkFlagRequired("type")
 }
