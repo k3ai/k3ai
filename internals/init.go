@@ -69,11 +69,15 @@ func Init(){
 
 func Update(){
 		var action = "update"
+		icon := []string{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"}
+		s := spinner.New(icon, 100*time.Millisecond,spinner.WithColor("fgHiYellow"))
+		s.Start()
+		time.Sleep(500 * time.Millisecond)
 		log.Info("Updating K3ai plugin list...")
 		time.Sleep(500 * time.Millisecond)
 		err := pluginContent(action)
 		_ = log.CheckErrors(err)
-		log.Info("Done | Plugins synchronized")
+		log.Info("Plugins synchronized")
 }
 
 
