@@ -9,17 +9,17 @@ import (
 )
 func List(result string)  {
     if result == "infra" {
-        listTable(result,"name","Description", "Version", "Tag")
+        listTable(result,"name","Description", "Version", "Tag","Status")
     }
     if result == "apps"{
-        listTable(result,"name","Description","Version","Tag")
+        listTable(result,"name","Description","Version","Tag","Status")
     }
     if result == "bundles"{
-        listTable(result,"name","Description","Version","Tag")
+        listTable(result,"name","Description","Version","Tag","Status")
     }
 }
 var results []string
-func listTable( title string,column1 string, column2 string, column3 string, column4 string)  {
+func listTable( title string,column1 string, column2 string, column3 string, column4 string, column5 string)  {
     switch title {
     case "apps":
         results = callDB.AppsDisplaySQL()
@@ -46,15 +46,18 @@ func listTable( title string,column1 string, column2 string, column3 string, col
             t.AppendHeader(table.Row{"Bundles Plugins"})
         }
         t.AppendSeparator()
-        t.AppendHeader(table.Row{column1, column2, column3, column4})
+        t.AppendHeader(table.Row{column1, column2, column3, column4, column5})
         t.SetColumnConfigs([]table.ColumnConfig{
             {Number: 2,WidthMaxEnforcer: text.Trim},
         })
         var i int
-        limit := 4
+        limit := 5
         for i = 0; i < len(results); i+= limit{
             batch := results[i:min(i+limit, len(results))]
-            t.AppendRow(table.Row{batch[0],text.WrapSoft(string(batch[1]),100),batch[2],batch[3]})
+            if batch[4] == "" {
+                batch[4] = "available"
+            }
+            t.AppendRow(table.Row{batch[0],text.WrapSoft(string(batch[1]),100),batch[2],batch[3], batch[4]})
         }
          
     

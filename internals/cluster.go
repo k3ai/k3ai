@@ -49,6 +49,11 @@ func Cluster(pluginUrl string, strName string, strType string) error {
 					log.Error(err)
 					return err
 				}
+				err = utils.ClusterSQL(strName,strType)
+				if err != nil {
+					_ = log.CheckErrors(err)
+				}
+				
 			}
 	
 			}

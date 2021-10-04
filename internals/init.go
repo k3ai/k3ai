@@ -14,7 +14,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	data "github.com/k3ai/config"
 	log "github.com/k3ai/log"
-	utils "github.com/k3ai/shared"
+	shared "github.com/k3ai/shared"
+	utils "github.com/k3ai/utils"
 	
 )
 
@@ -39,10 +40,11 @@ func Init(){
 	s := spinner.New(icon, 100*time.Millisecond,spinner.WithColor("fgHiYellow"))
 	s.Start()
 	time.Sleep(500 * time.Millisecond)
+	log.Info("Initialize K3ai...")	
 	homeDir,_ := os.UserHomeDir()
 	err := mkDir()
 	_ = log.CheckErrors(err)
-	log.Info("Initialize K3ai...")	
+	utils.GetTools()
 	time.Sleep(500 * time.Millisecond)
 	log.Info("Creating k3ai folder structure...")
 	time.Sleep(500 * time.Millisecond)
@@ -50,7 +52,7 @@ func Init(){
 	time.Sleep(500 * time.Millisecond)
 	log.Info("Setting up local database...")
 	s.Stop()
-	_,err = utils.DbCreate()
+	_,err = shared.DbCreate()
 	time.Sleep(500 * time.Millisecond)
 	s.Restart()
 	_ = log.CheckErrors(err)
@@ -95,7 +97,7 @@ func mkDir() error {
 
 //Read the current plugin details
  func pluginContent (action string) error {
-	ctx,client,_ := utils.MainGitHub()
+	ctx,client,_ := shared.MainGitHub()
 	var reposComms []*github.RepositoryContent
 	// Let's retrieve the list of various plugins and store them as a
 	_,reposApps,_,_:= client.Repositories.GetContents(ctx,repoOwner,repoRoot,repoApps,nil)
@@ -124,9 +126,9 @@ func mkDir() error {
 							log.Error(err)
 						}
 						if action == "create" {
-							utils.FillPluginTables(&dataResults, subContent.GetDownloadURL(),"")
+							shared.FillPluginTables(&dataResults, subContent.GetDownloadURL(),"")
 							} else if action == "update" {
-								utils.UpdatePluginTables(&dataResults, subContent.GetDownloadURL(),"")
+								shared.UpdatePluginTables(&dataResults, subContent.GetDownloadURL(),"")
 						}
 						
 					}
@@ -150,9 +152,9 @@ func mkDir() error {
 					}
 
 					if action == "create" {
-						utils.FillPluginTables(&dataResults, subContent.GetDownloadURL(),"")
+						shared.FillPluginTables(&dataResults, subContent.GetDownloadURL(),"")
 						} else if action == "update" {
-							utils.UpdatePluginTables(&dataResults, subContent.GetDownloadURL(),"")
+							shared.UpdatePluginTables(&dataResults, subContent.GetDownloadURL(),"")
 					}
 				}
 				
@@ -175,9 +177,9 @@ func mkDir() error {
 				}
 
 				if action == "create" {
-					utils.FillPluginTables(&dataResults, subContent.GetDownloadURL(),"")
+					shared.FillPluginTables(&dataResults, subContent.GetDownloadURL(),"")
 				} else if action == "update" {
-					utils.UpdatePluginTables(&dataResults, subContent.GetDownloadURL(),"")
+					shared.UpdatePluginTables(&dataResults, subContent.GetDownloadURL(),"")
 				}
 			}
 			
@@ -200,9 +202,9 @@ for _,repoComm := range reposComms {
 				}
 
 				if action == "create" {
-					utils.FillPluginTables(&dataResults, subContent.GetDownloadURL(),"comm")
+					shared.FillPluginTables(&dataResults, subContent.GetDownloadURL(),"comm")
 				} else if action == "update" {
-					utils.UpdatePluginTables(&dataResults, subContent.GetDownloadURL(),"comm")
+					shared.UpdatePluginTables(&dataResults, subContent.GetDownloadURL(),"comm")
 				}
 			}
 			

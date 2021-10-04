@@ -1,7 +1,7 @@
 package shared
 
 import (
-	// "os"
+	"os"
 	"bufio"
 	"os/exec"
 
@@ -12,7 +12,9 @@ import (
 	
 )
 
-
+const (
+	k3aiKustomize = "/.k3ai/.utils/kubectl"
+)
 
 func InitExec(pluginName string ,pluginEx string ,pluginArgs string,pluginKube string,pluginType string,pluginWait bool) error {
 	
@@ -64,8 +66,8 @@ func InitExec(pluginName string ,pluginEx string ,pluginArgs string,pluginKube s
 		
 		git.PlainClone("/home/alefesta/.k3ai/.kustomize/" + pluginName, false,&git.CloneOptions{URL: pluginEx})
 		
-
-		cmd := exec.Command("kubectl","apply","-k","/home/alefesta/.k3ai/.kustomize/" + pluginName + "/" + pluginArgs)
+		homeDir,_ := os.UserHomeDir()
+		cmd := exec.Command(homeDir + k3aiKustomize,"apply","-k","/home/alefesta/.k3ai/.kustomize/" + pluginName + "/" + pluginArgs)
 		r, _ := cmd.StdoutPipe()
 		cmd.Stderr = cmd.Stdout
 		done := make(chan struct{})

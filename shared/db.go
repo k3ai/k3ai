@@ -26,22 +26,23 @@ const (
 	k3aiFile = "k3ai.yaml"
 )
 
-type appTable struct {
+type Plugins struct {
 	name		string
 	desc		string
 	ver			string
 	tag			string
 	pluginType 	string
 	url			string
+	status 		string
 }
-var appsRows appTable
+var appsRows Plugins
 
 func AppsDisplaySQL() (result []string){
 	homeDir,_ := os.UserHomeDir()
 	dbPath := homeDir + "/" + homeK3ai + "/" + "k3ai.db"
-	db, _ := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
-	row, _ := db.Query("SELECT * FROM plugins WHERE type='Application' ORDER BY name ;")
-	defer row.Close()
+	db, _:= sql.Open("sqlite3",dbPath ) // Open the created SQLite File
+	rows, _ := db.Query("SELECT * FROM plugins WHERE type='Application' ORDER BY name ;")
+	defer rows.Close()
 	var id int
 	var name string
 	var desc string
@@ -49,13 +50,15 @@ func AppsDisplaySQL() (result []string){
 	var tag string
 	var pluginType string
 	var resource string
-	for row.Next() { // Iterate and fetch the records from result cursor
-		row.Scan(&id, &name, &desc,&ver,&tag,&pluginType,&resource)
+	var status string
+	for rows.Next() { // Iterate and fetch the records from result cursor
+		rows.Scan(&id,&name, &desc,&ver,&tag,&pluginType,&resource,&status)
 		appsRows.name = name
 		appsRows.desc = desc
 		appsRows.ver = ver
 		appsRows.tag = tag
-		result = append(result,name,desc,ver,tag)
+		appsRows.status = status
+		result = append(result,name,desc,ver,tag,status)
 	}
 	return result
 }
@@ -72,14 +75,16 @@ func InfraDisplaySQL() (result []string){
 	var ver string
 	var tag string
 	var pluginType string
+	var status string
 	var resource string
 	for row.Next() { // Iterate and fetch the records from result cursor
-		row.Scan(&id, &name, &desc,&ver,&tag,&pluginType,&resource)
+		row.Scan(&id, &name, &desc,&ver,&tag,&pluginType,&resource,&status)
 		appsRows.name = name
 		appsRows.desc = desc
 		appsRows.ver = ver
 		appsRows.tag = tag
-		result = append(result,name,desc,ver,tag)
+		appsRows.status = status
+		result = append(result,name,desc,ver,tag,status)
 	}
 	
 	// return result
@@ -98,14 +103,19 @@ func BundleDisplaySQL() (result []string){
 	var ver string
 	var tag string
 	var pluginType string
+	var status string
 	var resource string
 	for row.Next() { // Iterate and fetch the records from result cursor
-		row.Scan(&id, &name, &desc,&ver,&tag,&pluginType,&resource)
+		row.Scan(&id, &name, &desc,&ver,&tag,&pluginType,&resource,&status)
 		appsRows.name = name
 		appsRows.desc = desc
 		appsRows.ver = ver
 		appsRows.tag = tag
-		result = append(result,name,desc,ver,tag)
+		appsRows.status = status
+		if status == "" {
+			status = "available"
+		}
+		result = append(result,name,desc,ver,tag,status)
 	}
 	return result
 }
@@ -185,7 +195,8 @@ func createTables(db *sql.DB) (dbConn *sql.DB,err error) {
 		"ver" TEXT,
 		"tag" TEXT,
 		"type" TEXT,
-		"url" TEXT
+		"url" TEXT,
+		"status" TEXT
 		);`
 		dbState, err = db.Prepare(appsTable)
 		if err != nil {
@@ -281,16 +292,44 @@ func SelectPlugin(pluginName string) (pluginType string, pluginUrl string, err e
 	return pluginType, pluginUrl, nil
 }
 
-func RegisterCluster(pluginName string) (pluginType string, pluginUrl string) {
+// func RegisterCluster(pluginName string) (pluginType string, pluginUrl string) {
+// 	homeDir,_ := os.UserHomeDir()
+// 	dbPath := homeDir + "/" + homeK3ai + "/" + "k3ai.db"
+// 	db, _ := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
+// 	query := "SELECT type,url FROM plugins WHERE name='" + pluginName +"';"
+// 	row := db.QueryRow(query,pluginName)
+// 	err := row.Scan(&pluginType,&pluginUrl)
+// 	if err != nil {
+// 		log.Error(err)
+// 	}
+
+// 	return pluginType, pluginUrl
+// }
+
+func ClusterSQL(name string, clusterType string) error {
+	var status = "enabled"
 	homeDir,_ := os.UserHomeDir()
 	dbPath := homeDir + "/" + homeK3ai + "/" + "k3ai.db"
 	db, _ := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
-	query := "SELECT type,url FROM plugins WHERE name='" + pluginName +"';"
-	row := db.QueryRow(query,pluginName)
-	err := row.Scan(&pluginType,&pluginUrl)
+	query := "SELECT type,name FROM clusters WHERE name='" + name +"';"
+	row := db.QueryRow(query,name)
+	err := row.Scan(&name,&clusterType)
+	if err != nil {
+		if err.Error() != "sql: no rows in result set"{
+			log.Error("Cluster already registered...")
+			return err
+		}
+	}
+	fillCluster := `INSERT OR REPLACE INTO clusters(name,type,status) VALUES (?, ?, ?);`
+	statement, err:= db.Prepare(fillCluster)
 	if err != nil {
 		log.Error(err)
 	}
-
-	return pluginType, pluginUrl
+	defer statement.Close()
+	_,err = statement.Exec(name,clusterType,status)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
 }
