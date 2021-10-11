@@ -1,0 +1,72 @@
+package internal
+
+var (
+	// Version is the version of the CLI injected in compilation time
+	Version = "dev"
+)
+
+
+
+type Options struct {
+	Quiet	bool
+	Config  string
+	Force	bool
+	Deploy	bool
+	Remove	bool
+	Name 	string
+	Type 	string
+	Target 	string
+	Filter  string
+}
+
+
+type Env struct {
+	GH_AUTH_TOKEN	string `yaml:"GITHUB_AUTH_TOKEN"`
+}
+
+
+type K3aiPlugin struct {
+	Api string `yaml:"api"`
+	Kind string `yaml:"kind"`
+	Metadata struct {
+					Name string `yaml:"name"`
+					Desc string `yaml:"desc"`
+					Tag	string `yaml:"tag,omitempty"`
+					Version string `yaml:"version,omitempty"`
+					PluginType string `yaml:"plugintype"`
+
+	}
+
+	Resources []string `yaml:"resources,omitempty"`
+
+}
+
+type K3aiRootPlugin struct {
+	Api string `yaml:"api"`
+	Kind string `yaml:"kind"`
+	Metadata struct {
+					Name string `yaml:"name"`
+					Desc string `yaml:"desc"`
+					Tag	string `yaml:"tag,omitempty"`
+					Version string `yaml:"version,omitempty"`
+					PluginType string `yaml:"plugintype"`
+
+	}
+
+	Resources []string `yaml:"resources,omitempty"`
+
+}
+type AppPlugin struct {
+	Api string `yaml:"api"`
+	Kind string `yaml:"kind"`
+	Resources []AppPluginResources
+}
+
+type AppPluginResources struct {
+	Path string `yaml:"path"`
+	Args string `yaml:"args,omitempty"`
+	Kubecfg string `yaml:"kubeconfig,omitempty"`
+	PluginType string `yaml:"type"`
+	Wait bool `yaml:"wait"`
+	Remove string `yaml:"remove,omitempty"`
+}
