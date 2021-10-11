@@ -10,6 +10,7 @@ var (
 type Options struct {
 	Quiet	bool
 	Config  string
+	All		bool
 	Force	bool
 	Deploy	bool
 	Remove	bool

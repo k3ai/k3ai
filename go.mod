@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/fatih/color v1.7.0
 	github.com/google/go-github/v39 v39.1.0
+	github.com/jedib0t/go-pretty/v6 v6.2.4
 	github.com/mattn/go-sqlite3 v1.14.8
 	github.com/schollz/progressbar/v3 v3.8.3
 	github.com/spf13/cobra v1.2.1
@@ -36,7 +37,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4 // indirect
 	golang.org/x/sys v0.0.0-20210910150752-751e447fb3d0 // indirect
-	golang.org/x/text v0.3.5 // indirect
+	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.26.0 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect

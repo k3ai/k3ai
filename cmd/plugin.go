@@ -7,6 +7,8 @@ import (
 
 	color "github.com/k3ai/pkg/color"
 	"github.com/k3ai/internal"
+	db "github.com/k3ai/pkg/db"
+	tables "github.com/k3ai/pkg/tables"
   
 )
 
@@ -51,9 +53,23 @@ func pluginCommand() *cobra.Command{
 		Use:"list [-a --all] [-n NAME]",
 		Short: "List installable plugin types or configuration of a given plugin.",
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 0 {
+			allList,_ := cmd.Flags().GetBool("all")
+			nameList,_ := cmd.Flags().GetString("name")
+
+			if len(args) == 0 && !allList && nameList == ""{
 				cmd.Help()
 				os.Exit(0)
+			} else {
+				if allList && nameList != "" {
+					appsResults,infraResults,bundlesResults,commsResults := db.ListPlugins()
+					tables.List(appsResults,infraResults,bundlesResults,commsResults)
+				} else if allList {
+					appsResults,infraResults,bundlesResults,commsResults := db.ListPlugins()
+					tables.List(appsResults,infraResults,bundlesResults,commsResults)
+				} else {
+					results := db.ListPluginsByName(nameList)
+					tables.ListByName(results)
+				}
 			}
 		},
 	}
@@ -86,7 +102,7 @@ func pluginCommand() *cobra.Command{
 	removeFlags.StringVarP(&plugin.Config,"config","c","","Configure K3ai using a custom config file.[-c /path/tofile] [-c https://urlToFile]")
 	
 	//list listFlags available
-	listFlags.StringVarP(&plugin.Config,"all","a","","Show all possible plugin configurations available.")
+	listFlags.BoolVarP(&plugin.All,"all","a",false,"Show all possible plugin configurations available.")
 	listFlags.StringVarP(&plugin.Name,"name","n","","NAME of plugin to list")
 		
 	return pluginCmd
