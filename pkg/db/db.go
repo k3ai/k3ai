@@ -13,30 +13,24 @@ import (
 var ctx context.Context
 const (
 	clusters = `CREATE TABLE "clusters" (
-		"id"	INTEGER NOT NULL UNIQUE,
 		"name"	TEXT NOT NULL UNIQUE,
 		"ctype"	TEXT NOT NULL,
 		"kube"	BLOB,
-		"status"	TEXT NOT NULL,
-		PRIMARY KEY("id" AUTOINCREMENT)
+		"status"	TEXT NOT NULL
 	);`
 
 	plugins = `CREATE TABLE "plugins" (
-		"id"	INTEGER NOT NULL UNIQUE,
 		"name"	TEXT NOT NULL UNIQUE,
 		"desc"	TEXT NOT NULL,
 		"ptype"	TEXT,
 		"tag"	TEXT,
 		"version"	TEXT,
-		"url"	TEXT NOT NULL,
-		PRIMARY KEY("id" AUTOINCREMENT)
+		"url"	TEXT NOT NULL
 	);`
 
 	currentStatus = `CREATE TABLE "listStatus" (
-		"id"	INTEGER NOT NULL UNIQUE,
 		"cluster_id"	INTEGER NOT NULL,
-		"plugin_id"	INTEGER NOT NULL,
-		PRIMARY KEY("id" AUTOINCREMENT)
+		"plugin_id"	INTEGER NOT NULL
 	);`
 )
 
@@ -162,14 +156,13 @@ func ListPlugins() (appsResults []string,infraResults []string,bundlesResults []
 	}
 	defer row.Close()
 	for row.Next() { // Iterate and fetch the records from result cursor
-		var id int
 		var name string
 		var desc string
 		var ptype string
 		var tag string
 		var version string
 		var url string
-		row.Scan(&id,&name,&desc,&ptype,&tag,&version,&url)
+		row.Scan(&name,&desc,&ptype,&tag,&version,&url)
 		if ptype == "application"{
 			appsResults = append(appsResults,name,desc,ptype,tag,version)
 		}
@@ -197,54 +190,64 @@ func ListPluginsByName(name string) (Results[]string) {
 	}
 	defer row.Close()
 	for row.Next() { // Iterate and fetch the records from result cursor
-		var id int
 		var name string
 		var desc string
 		var ptype string
 		var tag string
 		var version string
 		var url string
-		row.Scan(&id,&name,&desc,&ptype,&tag,&version,&url)
+		row.Scan(&name,&desc,&ptype,&tag,&version,&url)
 		Results = append(Results,name,desc,ptype,tag,version)
 		
 	}
 	return Results
 }
 
-func ListClustersByName() (Results[]string) {
+func ListClustersByName() (clusterResults[]string) {
 
 	db := DbLogin()
-	row, err := db.Query("SELECT * FROM clusters;")
+	row, err := db.Query("SELECT * from CLUSTERS;")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer row.Close()
-	for row.Next() { // Iterate and fetch the records from result cursor
-		var id int
+	for row.Next() {
 		var name string
-		var desc string
-		var ptype string
-		var tag string
-		var version string
-		var url string
-		row.Scan(&id,&name,&desc,&ptype,&tag,&version,&url)
-		Results = append(Results,name,desc,ptype,tag,version)
-		
+		var ctype string
+		var kube string
+		var status string
+		row.Scan(&name,&ctype,&kube,&status)
+		clusterResults = append(clusterResults,name,ctype,status)
 	}
-	return Results
+
+		
+	return clusterResults
+}
+
+func CheckClusterName(name string) string {
+	db := DbLogin()
+	row, _ := db.Query("SELECT name from CLUSTERS where name=?;",name)
+
+	defer row.Close()
+	row.Next()
+	err := row.Scan(&name)
+	if err == nil {
+		return "name exist"
+	}
+	return ""
 }
 
 func InsertCluster(clusterConfig []string ) error {
 	db := DbLogin()
-	insertStatus := `INSERT INTO clusters VALUES (?,?,?,?,?);`
+	insertStatus := `INSERT INTO clusters VALUES (?,?,?,?);`
 	dbState, err := db.Prepare(insertStatus)
 	if err != nil {
 		log.Fatal(err.Error())
 		return err
 	}
-	var id int
-	_, err = dbState.Exec(id,clusterConfig[0],clusterConfig[1],clusterConfig[2],clusterConfig[3])
-	return nil
+
+	_, err = dbState.Exec(clusterConfig[0],clusterConfig[1],clusterConfig[2],clusterConfig[3])
+	return err
 }
 
 func KubeStr() (kubeStr string) {
@@ -255,12 +258,11 @@ func KubeStr() (kubeStr string) {
 	}
 	defer row.Close()
 	for row.Next() { // Iterate and fetch the records from result cursor
-		var id int
 		var name string
 		var ctype string
 		var kube string
 		var status string
-		row.Scan(&id,&name,&ctype,&kube,&status)
+		row.Scan(&name,&ctype,&kube,&status)
 		kubeStr = kube
 	}
 	return kubeStr

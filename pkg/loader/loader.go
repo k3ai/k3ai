@@ -21,3 +21,4 @@ func StandardLoader(msg string) {
 			time.Sleep(40 * time.Millisecond)
 		}
 }
+

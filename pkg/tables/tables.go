@@ -129,16 +129,16 @@ func ListClusters(Results []string) {
 	t.SetStyle(table.StyleLight)
 	t.Style().Color.Header = text.Colors{text.Bold}
 	t.SetTitle("CLUSTERS DEPLOYED")
-	t.AppendHeader(table.Row{"Name","Description","Type","Tag","Version","Status"})
+	t.AppendHeader(table.Row{"Name","Type","Status"})
 	t.SetColumnConfigs([]table.ColumnConfig{
 		{Number: 1, Colors: text.Colors{text.Color(text.FgYellow),},},
 		{Number: 2, WidthMax: 90, WidthMaxEnforcer: text.WrapText},
 		{Number: 6, Colors: text.Colors{text.Color(text.FgHiYellow)}},
 	})
-	limit := 5
+	limit := 3
 	for i:=0; i < len(Results)-1;i+= limit{
 		batch := Results[i:min(i+limit, len(Results))]
-		t.AppendRow(table.Row{strings.ToUpper(batch[0]),batch[1],batch[2],batch[3],batch[4],"Active"})
+		t.AppendRow(table.Row{strings.ToUpper(batch[0]),batch[1],batch[2]})
 		t.AppendSeparator()
 	}
 	t.Render()

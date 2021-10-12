@@ -2,10 +2,10 @@ package names
 
 import (
 	"math/rand"
-	"strings"
+	"strconv"
 )
 
-var names = []string{
+var left = [...]string{
 "Michael",
 "Mark",
 "Matt",
@@ -38,7 +38,7 @@ var names = []string{
 "Libby",
 }
 
-var def = []string {
+var right = [...]string {
 	"amazing",
 	"super",
 	"fast",
@@ -49,9 +49,15 @@ var def = []string {
 	"cool",
 }
 
-func GeneratedName() string {
-	randomIndexNames := rand.Intn(len(names))
-	randomIndexDef := rand.Intn(len(def))
-	pick := strings.ToLower(names[randomIndexNames] + "_" + def[randomIndexDef])
-	return pick
-}
+func GeneratedName(retry int) string {
+	begin:
+		name := left[rand.Intn(len(left))] + "_" + right[rand.Intn(len(right))] //nolint:gosec // G404: Use of weak random number generator (math/rand instead of crypto/rand)
+		if name == "boring_wozniak" /* Steve Wozniak is not boring */ {
+			goto begin
+		}
+	
+		if retry > 0 {
+			name += strconv.Itoa(rand.Intn(10)) //nolint:gosec // G404: Use of weak random number generator (math/rand instead of crypto/rand)
+		}
+		return name
+	}

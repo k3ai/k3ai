@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
+	"log"
 
 
 	"github.com/spf13/cobra"
@@ -48,7 +48,13 @@ func clusterCommand() *cobra.Command{
 				os.Exit(0)
 			}
 			if !boolQuiet  && strName == ""{
-				strName = names.GeneratedName()
+				strName = names.GeneratedName(0)
+				res := db.CheckClusterName(strName)
+				if res != "" {
+					strName = names.GeneratedName(1)
+				}
+
+
 				statusOk,_ := clusterOperation.Deployment(strName, strType)
 				if statusOk {			
 					clusterConfig := []string{strName,strType,"","Installed"}
@@ -56,7 +62,25 @@ func clusterCommand() *cobra.Command{
 					if err != nil {
 						log.Fatal(err)
 					}
+					color.Done()
+					fmt.Println(" ✔️ Installation Done.")
 					// clusterOperation.Client(strName,strType)
+				}
+			} else if !boolQuiet && strName != "" {
+				res := db.CheckClusterName(strName)
+				if res != "" {
+					strName = names.GeneratedName(1)
+				}
+				statusOk,_ := clusterOperation.Deployment(strName, strType)
+				if statusOk {			
+					clusterConfig := []string{strName,strType,"","Installed"}
+					fmt.Printf("here")
+					err := db.InsertCluster(clusterConfig)
+					if err != nil {
+						log.Fatal(err)
+					}
+					color.Done()
+					fmt.Println(" ✔️ Installation Done.")
 				}
 			}
 		},

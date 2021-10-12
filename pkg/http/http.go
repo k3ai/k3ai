@@ -107,12 +107,15 @@ func InfrastructureDeployment (name string) (deployExec *internal.AppPlugin) {
     if err != nil {
         fmt.Print(err)
     }
-    url = strings.Replace(url,"k3ai.yaml",deployResults.Resources[0] + "plugin.yaml",-1 )
-    result,_ = Download(url)
-    
-    err = yaml.Unmarshal([]byte(result), &deployExec)
-    if err != nil {
-        fmt.Print(err)
+
+    for i:=0; i < len(deployResults.Resources);i++ {
+        url = strings.Replace(url,"k3ai.yaml",deployResults.Resources[i] + "plugin.yaml",-1 )
+        result,_ = Download(url)
+        
+        err = yaml.Unmarshal([]byte(result), &deployExec)
+        if err != nil {
+            fmt.Print(err)
+        }
     }
-    return deployExec
+return deployExec   
 }

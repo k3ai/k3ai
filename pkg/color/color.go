@@ -16,4 +16,7 @@ func Done() {
 	color.Set(color.FgGreen)
 }
 
+func InProgress() {
+	color.Set(color.FgYellow)
+}
 

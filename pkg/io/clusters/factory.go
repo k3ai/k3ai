@@ -2,6 +2,7 @@ package clusters
 
 import (
 	"context"
+	"bufio"
 	"flag"
 	"fmt"
 	"io"
@@ -26,6 +27,7 @@ import (
 
 	http "github.com/k3ai/pkg/http"
 	internal "github.com/k3ai/internal"
+	color "github.com/k3ai/pkg/color"
 )
 
 const (
@@ -43,17 +45,44 @@ var (
 func Deployment (name string, ctype string) (status bool, err error) {
 
 		appPlugin := http.InfrastructureDeployment(ctype)
+		pluginEx := string(appPlugin.Resources[0].Path)
+		pluginArgs := string(appPlugin.Resources[0].Args)
 		if appPlugin.Resources[0].PluginType == "shell" {
-			_,err := exec.Command("/bin/bash","-c",appPlugin.Resources[0].Path).Output()
-			if err != nil {
-				os.Exit(0)
-				log.Print(err)
-			} 
+				if pluginEx == "post" {
+					pluginEx = ""
+					exec.Command("/bin/bash","-c",pluginArgs).Output()
+		
+				}
+				cmd := exec.Command("/bin/bash","-c",pluginEx,pluginArgs)
+		
+				r, _ := cmd.StdoutPipe()
+				cmd.Stderr = cmd.Stdout
+				done := make(chan struct{})
+				scanner := bufio.NewScanner(r)
+				go func() {
+					// Read line by line and process it
+					color.Done()
+					fmt.Println(" 🚀 Starting installation...")
+					for scanner.Scan() {
+						line := scanner.Text()
+						color.Disable()
+						fmt.Println(" 🚀 " + line)
+					}
+					done <- struct{}{}
+				}()
+				// Start the command and check for errors
+				err := cmd.Start()
+				if err != nil {
+					log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")	
+				}
+				<-done
+				err = cmd.Wait()
+				if err != nil {
+					log.Fatal(err)
+				}
+		
 		}
 
-
-	// clientSet, kubeStr := Client(name, ctype)
-	// WaitForDeployment(clientSet)
 	status = true
 
 	return status,nil
