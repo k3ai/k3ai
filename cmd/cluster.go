@@ -1,14 +1,20 @@
 package cmd
 
 import (
-	"os"
 	"fmt"
-  	"github.com/spf13/cobra"
-	
+	"log"
+	"os"
 
-	color "github.com/k3ai/pkg/color"
+
+	"github.com/spf13/cobra"
+
 	internal "github.com/k3ai/internal"
-  
+	names "github.com/k3ai/internal/names"
+	color "github.com/k3ai/pkg/color"
+	db "github.com/k3ai/pkg/db"
+	clusterOperation "github.com/k3ai/pkg/io/clusters"
+
+	tables "github.com/k3ai/pkg/tables"
 )
 
 
@@ -36,12 +42,22 @@ func clusterCommand() *cobra.Command{
 			strType,_ := cmd.Flags().GetString("type")
 			strConf,_ := cmd.Flags().GetString("config")
 			boolQuiet, _ := cmd.Flags().GetBool("quiet")
-			if len(args) >= 0 &&  strType == "" && strConf != ""{
+			strName,_ := cmd.Flags().GetString("name")
+			if len(args) >= 0 &&  strType == "" && strConf != "" && strName == ""{
 				cmd.Help()
 				os.Exit(0)
 			}
-			if !boolQuiet {
-
+			if !boolQuiet  && strName == ""{
+				strName = names.GeneratedName()
+				statusOk,_ := clusterOperation.Deployment(strName, strType)
+				if statusOk {			
+					clusterConfig := []string{strName,strType,"","Installed"}
+					err := db.InsertCluster(clusterConfig)
+					if err != nil {
+						log.Fatal(err)
+					}
+					// clusterOperation.Client(strName,strType)
+				}
 			}
 		},
 	}
@@ -59,9 +75,28 @@ func clusterCommand() *cobra.Command{
 		Use:"list",
 		Short: "List installable cluster types or configuration of a given cluster.",
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 0 {
+			allList,_ := cmd.Flags().GetBool("all")
+			nameList,_ := cmd.Flags().GetString("name")
+			deployedList, _ := cmd.Flags().GetBool("deployed")
+
+			if len(args) == 0 && !allList && nameList == "" && !deployedList{
 				cmd.Help()
 				os.Exit(0)
+			} else {
+				if allList && nameList != "" && ! deployedList{
+					appsResults,infraResults,bundlesResults,commsResults := db.ListPlugins()
+					tables.List("infra",appsResults,infraResults,bundlesResults,commsResults)
+				} else if allList && !deployedList{
+					appsResults,infraResults,bundlesResults,commsResults := db.ListPlugins()
+					tables.List("infra",appsResults,infraResults,bundlesResults,commsResults)
+				} else if !deployedList {
+					results := db.ListPluginsByName(nameList)
+					tables.ListByName(results)
+				}
+				if deployedList {
+					results := db.ListClustersByName()
+					tables.ListClusters(results)
+				}
 			}
 		},
 	}
@@ -87,8 +122,9 @@ func clusterCommand() *cobra.Command{
 	removeFlags.StringVarP(&cluster.Config,"config","c","","Configure K3ai using a custom config file.[-c /path/tofile] [-c https://urlToFile]")
 	
 	//list listFlags available
-	listFlags.StringVarP(&cluster.Config,"all","a","","Show all possible cluster configurations available.")
-	listFlags.StringVarP(&cluster.Name,"name","n","","NAME of cluster to list")
+	listFlags.BoolVarP(&cluster.All,"all","a",false,"Show all possible cluster configurations available.")
+	listFlags.StringVarP(&cluster.Name,"name","n","","List configurations by CLUSTER NAME")
+	listFlags.BoolVarP(&cluster.Deployed,"deployed","d",false,"List deployed clusters")
 	
 	
 	return clusterCmd

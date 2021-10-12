@@ -18,6 +18,7 @@ type Options struct {
 	Type 	string
 	Target 	string
 	Filter  string
+	Deployed bool
 }
 
 

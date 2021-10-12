@@ -62,10 +62,10 @@ func pluginCommand() *cobra.Command{
 			} else {
 				if allList && nameList != "" {
 					appsResults,infraResults,bundlesResults,commsResults := db.ListPlugins()
-					tables.List(appsResults,infraResults,bundlesResults,commsResults)
+					tables.List("plugin",appsResults,infraResults,bundlesResults,commsResults)
 				} else if allList {
 					appsResults,infraResults,bundlesResults,commsResults := db.ListPlugins()
-					tables.List(appsResults,infraResults,bundlesResults,commsResults)
+					tables.List("plugin",appsResults,infraResults,bundlesResults,commsResults)
 				} else {
 					results := db.ListPluginsByName(nameList)
 					tables.ListByName(results)
@@ -103,7 +103,7 @@ func pluginCommand() *cobra.Command{
 	
 	//list listFlags available
 	listFlags.BoolVarP(&plugin.All,"all","a",false,"Show all possible plugin configurations available.")
-	listFlags.StringVarP(&plugin.Name,"name","n","","NAME of plugin to list")
+	listFlags.StringVarP(&plugin.Name,"name","n","","List plugins by CLUSTER NAME")
 		
 	return pluginCmd
 }

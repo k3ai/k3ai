@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+    "strings"
 
     "gopkg.in/yaml.v2"
 	"github.com/k3ai/pkg/auth"
@@ -18,6 +19,8 @@ var (
     repoPaths = []string{"apps","infra","bundles"}
     comms ="community"
     dataResults = internal.K3aiRootPlugin{}
+    deployResults = internal.K3aiPlugin{}
+    deployExec = internal.AppPlugin{}
 )
 
 
@@ -94,4 +97,22 @@ func RetrievePlugins(token string) {
         }
     }
 
+}
+
+func InfrastructureDeployment (name string) (deployExec *internal.AppPlugin) {
+    url := db.List(name)
+    result,_ := Download(url)
+    
+    err := yaml.Unmarshal([]byte(result), &deployResults)
+    if err != nil {
+        fmt.Print(err)
+    }
+    url = strings.Replace(url,"k3ai.yaml",deployResults.Resources[0] + "plugin.yaml",-1 )
+    result,_ = Download(url)
+    
+    err = yaml.Unmarshal([]byte(result), &deployExec)
+    if err != nil {
+        fmt.Print(err)
+    }
+    return deployExec
 }

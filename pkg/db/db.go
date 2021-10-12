@@ -91,21 +91,16 @@ func Insert(sqlDBConn *sql.DB ) error {
 
 }
 
-func List() error {
+func List(name string) (url string) {
 	db := DbLogin()
-	listStatusByCluster := `SELECT * FROM listStatus
-	WHERE cluster_id IN (
-			SELECT clusters.id FROM clusters
-			WHERE clusters.name=?
-		);`
-	dbState, err := db.Prepare(listStatusByCluster)
+	row, err := db.Query("SELECT url from PLUGINS where name=?;",name)
 	if err != nil {
-		log.Fatal(err.Error())
-		return err
+		log.Fatal(err)
 	}
-	dbState.Exec()
-	return nil
-
+	defer row.Close()
+	row.Next()
+	row.Scan(&url)
+	return url
 }
 
 func Update(sqlDBConn *sql.DB ) {
@@ -214,4 +209,59 @@ func ListPluginsByName(name string) (Results[]string) {
 		
 	}
 	return Results
+}
+
+func ListClustersByName() (Results[]string) {
+
+	db := DbLogin()
+	row, err := db.Query("SELECT * FROM clusters;")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer row.Close()
+	for row.Next() { // Iterate and fetch the records from result cursor
+		var id int
+		var name string
+		var desc string
+		var ptype string
+		var tag string
+		var version string
+		var url string
+		row.Scan(&id,&name,&desc,&ptype,&tag,&version,&url)
+		Results = append(Results,name,desc,ptype,tag,version)
+		
+	}
+	return Results
+}
+
+func InsertCluster(clusterConfig []string ) error {
+	db := DbLogin()
+	insertStatus := `INSERT INTO clusters VALUES (?,?,?,?,?);`
+	dbState, err := db.Prepare(insertStatus)
+	if err != nil {
+		log.Fatal(err.Error())
+		return err
+	}
+	var id int
+	_, err = dbState.Exec(id,clusterConfig[0],clusterConfig[1],clusterConfig[2],clusterConfig[3])
+	return nil
+}
+
+func KubeStr() (kubeStr string) {
+	db := DbLogin()
+	row, err := db.Query("SELECT kube from CLUSTER;")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer row.Close()
+	for row.Next() { // Iterate and fetch the records from result cursor
+		var id int
+		var name string
+		var ctype string
+		var kube string
+		var status string
+		row.Scan(&id,&name,&ctype,&kube,&status)
+		kubeStr = kube
+	}
+	return kubeStr
 }
