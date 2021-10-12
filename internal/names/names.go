@@ -3,6 +3,7 @@ package names
 import (
 	"math/rand"
 	"strconv"
+	"strings"
 )
 
 var left = [...]string{
@@ -59,5 +60,6 @@ func GeneratedName(retry int) string {
 		if retry > 0 {
 			name += strconv.Itoa(rand.Intn(10)) //nolint:gosec // G404: Use of weak random number generator (math/rand instead of crypto/rand)
 		}
+		name=strings.ToLower(name)
 		return name
 	}

@@ -6,6 +6,7 @@ import (
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
+
 )
 
 func List(listStr string,appsResults []string,infraResults []string,bundlesResults []string,commsResults[]string) {
@@ -22,10 +23,10 @@ func List(listStr string,appsResults []string,infraResults []string,bundlesResul
 				{Number: 2, WidthMax: 90, WidthMaxEnforcer: text.WrapText},
 				{Number: 6, Colors: text.Colors{text.Color(text.FgHiGreen)}},
 			})
-			limit := 5
+			limit := 6
 			for i:=0; i < len(appsResults)-1;i+= limit{
 				batch := appsResults[i:min(i+limit, len(appsResults))]
-				t.AppendRow(table.Row{strings.ToUpper(batch[0]),strings.Title(batch[1]),batch[2],batch[3],batch[4],"Available"})
+				t.AppendRow(table.Row{strings.ToUpper(batch[0]),strings.Title(batch[1]),batch[2],batch[3],batch[4],batch[5]})
 				t.AppendSeparator()
 			}
 			t.Render()
@@ -45,11 +46,11 @@ func List(listStr string,appsResults []string,infraResults []string,bundlesResul
 				{Number: 2, WidthMax: 90, WidthMaxEnforcer: text.WrapText},
 				{Number: 6, Colors: text.Colors{text.Color(text.FgHiGreen)}},
 			})
-			limit := 5
+			limit := 6
 			for i:=0; i < len(infraResults)-1;i+= limit{
 				batch := infraResults[i:min(i+limit, len(infraResults))]
-				t.AppendRow(table.Row{strings.ToUpper(batch[0]),strings.Title(batch[1]),batch[2],batch[3],batch[4],"Available"})
-				t.AppendSeparator()
+				t.AppendRow(table.Row{strings.ToUpper(batch[0]),strings.Title(batch[1]),batch[2],batch[3],batch[4],batch[5]})
+				t.AppendSeparator()				
 			}
 			t.Render()
 		}
@@ -68,10 +69,11 @@ func List(listStr string,appsResults []string,infraResults []string,bundlesResul
 				{Number: 2, WidthMax: 90, WidthMaxEnforcer: text.WrapText},
 				{Number: 6, Colors: text.Colors{text.Color(text.FgHiGreen)}},
 			})
-			limit := 5
+			limit := 6
 			for i:=0; i < len(bundlesResults)-1;i+= limit{
 				batch := bundlesResults[i:min(i+limit, len(bundlesResults))]
-				t.AppendRow(table.Row{strings.ToUpper(batch[0]),strings.Title(batch[1]),batch[2],batch[3],batch[4],"Available"})
+
+				t.AppendRow(table.Row{strings.ToUpper(batch[0]),strings.Title(batch[1]),batch[2],batch[3],batch[4],batch[5]})
 				t.AppendSeparator()
 			}
 			t.Render()
@@ -94,7 +96,7 @@ func List(listStr string,appsResults []string,infraResults []string,bundlesResul
 		limit := 5
 		for i:=0; i < len(commsResults)-1;i+= limit{
 			batch := commsResults[i:min(i+limit, len(commsResults))]
-			t.AppendRow(table.Row{strings.ToUpper(batch[0]),strings.Title(batch[1]),batch[2],batch[3],batch[4],"Available"})
+			t.AppendRow(table.Row{strings.ToUpper(batch[0]),strings.Title(batch[1]),batch[2],batch[3],batch[4],batch[5]})
 			t.AppendSeparator()
 		}
 		t.Render()
@@ -117,7 +119,7 @@ func ListByName(Results []string) {
 	limit := 5
 	for i:=0; i < len(Results)-1;i+= limit{
 		batch := Results[i:min(i+limit, len(Results))]
-		t.AppendRow(table.Row{strings.ToUpper(batch[0]),batch[1],batch[2],batch[3],batch[4],"Active"})
+		t.AppendRow(table.Row{strings.ToUpper(batch[0]),batch[1],batch[2],batch[3],batch[4],batch[5]})
 		t.AppendSeparator()
 	}
 	t.Render()

@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"log"
-
+	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -43,17 +43,18 @@ func clusterCommand() *cobra.Command{
 			strConf,_ := cmd.Flags().GetString("config")
 			boolQuiet, _ := cmd.Flags().GetBool("quiet")
 			strName,_ := cmd.Flags().GetString("name")
+			strName = strings.ToLower(strName)
 			if len(args) >= 0 &&  strType == "" && strConf != "" && strName == ""{
 				cmd.Help()
 				os.Exit(0)
 			}
 			if !boolQuiet  && strName == ""{
 				strName = names.GeneratedName(0)
-				res := db.CheckClusterName(strName)
+				res,_ := db.CheckClusterName(strName)
 				if res != "" {
 					strName = names.GeneratedName(1)
 				}
-
+				strName = strings.ToLower(strName)
 
 				statusOk,_ := clusterOperation.Deployment(strName, strType)
 				if statusOk {			
@@ -67,10 +68,11 @@ func clusterCommand() *cobra.Command{
 					// clusterOperation.Client(strName,strType)
 				}
 			} else if !boolQuiet && strName != "" {
-				res := db.CheckClusterName(strName)
+				res,_ := db.CheckClusterName(strName)
 				if res != "" {
 					strName = names.GeneratedName(1)
 				}
+				strName = strings.ToLower(strName)
 				statusOk,_ := clusterOperation.Deployment(strName, strType)
 				if statusOk {			
 					clusterConfig := []string{strName,strType,"","Installed"}
@@ -89,9 +91,23 @@ func clusterCommand() *cobra.Command{
 		Use:"remove [-n NAME] [-q] [-c]",
 		Short: "Remove a given cluster based on NAME",
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 0 {
+			strName,_ := cmd.Flags().GetString("name")
+			strName = strings.ToLower(strName)
+			if len(args) == 0 && strName =="" {
 				cmd.Help()
 				os.Exit(0)
+			} else {
+				_,ctype := db.CheckClusterName(strName)
+				statusOk,_ := clusterOperation.Removal(strName,ctype)
+				if statusOk {			
+					strName = strings.ToLower(strName)
+					err := db.DeleteCluster(strName)
+					if err != nil {
+						log.Fatal(err)
+					}
+					color.Done()
+					fmt.Println(" ✔️ Cluster Removal Done.")
+				}
 			}
 		},
 	}

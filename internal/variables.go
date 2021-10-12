@@ -52,6 +52,7 @@ type K3aiRootPlugin struct {
 					Tag	string `yaml:"tag,omitempty"`
 					Version string `yaml:"version,omitempty"`
 					PluginType string `yaml:"plugintype"`
+					PluginStatus string `yaml:"status"`
 
 	}
 

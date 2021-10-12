@@ -25,7 +25,8 @@ const (
 		"ptype"	TEXT,
 		"tag"	TEXT,
 		"version"	TEXT,
-		"url"	TEXT NOT NULL
+		"url"	TEXT NOT NULL,
+		"status" 	TEXT NOT NULL
 	);`
 
 	currentStatus = `CREATE TABLE "listStatus" (
@@ -121,7 +122,7 @@ func createTables(ch chan bool,sqlDBConn *sql.DB ) error {
 	return nil
 }
 
-func InsertPlugins(plugin [6]string ) error {
+func InsertPlugins(plugin [7]string ) error {
 	db := DbLogin()
 	
 	name := strings.ToLower(plugin[0])
@@ -130,14 +131,15 @@ func InsertPlugins(plugin [6]string ) error {
 	tag  := strings.ToLower(plugin[3])
 	pluginType := strings.ToLower(plugin[2])
 	pluginUrl := strings.ToLower(plugin[5])
+	pluginStatus := strings.Title(plugin[6])
 	
-	fillApps := `INSERT INTO plugins(name,desc,version,tag,ptype,url) VALUES (?, ?, ?, ?, ?,?)`
+	fillApps := `INSERT INTO plugins(name,desc,version,tag,ptype,url,status) VALUES (?, ?, ?, ?, ?,?,?)`
 	statement, err:= db.Prepare(fillApps)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer statement.Close()
-	_,err = statement.Exec(name,desc,ver,tag,pluginType,pluginUrl)
+	_,err = statement.Exec(name,desc,ver,tag,pluginType,pluginUrl,pluginStatus)
 	if err != nil {
 		log.Fatal(err)
 		return err
@@ -162,18 +164,19 @@ func ListPlugins() (appsResults []string,infraResults []string,bundlesResults []
 		var tag string
 		var version string
 		var url string
-		row.Scan(&name,&desc,&ptype,&tag,&version,&url)
+		var status string
+		row.Scan(&name,&desc,&ptype,&tag,&version,&url,&status)
 		if ptype == "application"{
-			appsResults = append(appsResults,name,desc,ptype,tag,version)
+			appsResults = append(appsResults,name,desc,ptype,tag,version,status)
 		}
 		if ptype == "infra" {
-			infraResults = append(infraResults,name,desc,ptype,tag,version)
+			infraResults = append(infraResults,name,desc,ptype,tag,version, status)
 		}
 		if ptype == "bundles" {
-			bundlesResults = append(bundlesResults,name,desc,ptype,tag,version)
+			bundlesResults = append(bundlesResults,name,desc,ptype,tag,version, status)
 		}
 		if ptype =="comms" {
-			commsResults = append(commsResults,name,desc,ptype,tag,version)
+			commsResults = append(commsResults,name,desc,ptype,tag,version, status)
 		}
 		
 	}
@@ -196,8 +199,9 @@ func ListPluginsByName(name string) (Results[]string) {
 		var tag string
 		var version string
 		var url string
-		row.Scan(&name,&desc,&ptype,&tag,&version,&url)
-		Results = append(Results,name,desc,ptype,tag,version)
+		var status string
+		row.Scan(&name,&desc,&ptype,&tag,&version,&url,&status)
+		Results = append(Results,name,desc,ptype,tag,version,status)
 		
 	}
 	return Results
@@ -224,17 +228,17 @@ func ListClustersByName() (clusterResults[]string) {
 	return clusterResults
 }
 
-func CheckClusterName(name string) string {
+func CheckClusterName(name string) (resname string, ctype string) {
 	db := DbLogin()
-	row, _ := db.Query("SELECT name from CLUSTERS where name=?;",name)
+	row, _ := db.Query("SELECT name,ctype from CLUSTERS where name=?;",name)
 
 	defer row.Close()
 	row.Next()
-	err := row.Scan(&name)
+	err := row.Scan(&name,&ctype)
 	if err == nil {
-		return "name exist"
+		return "name exist",ctype
 	}
-	return ""
+	return "",""
 }
 
 func InsertCluster(clusterConfig []string ) error {
@@ -247,6 +251,19 @@ func InsertCluster(clusterConfig []string ) error {
 	}
 
 	_, err = dbState.Exec(clusterConfig[0],clusterConfig[1],clusterConfig[2],clusterConfig[3])
+	return err
+}
+
+func DeleteCluster(name string ) error {
+	db := DbLogin()
+	insertStatus := `DELETE from clusters where name=?;`
+	dbState, err := db.Prepare(insertStatus)
+	if err != nil {
+		log.Fatal(err.Error())
+		return err
+	}
+
+	_, err = dbState.Exec(name)
 	return err
 }
 

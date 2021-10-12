@@ -86,7 +86,7 @@ func RetrievePlugins(token string) {
 						if err != nil {
 							fmt.Print(err)
 						}
-                        plugins := [...]string{dataResults.Metadata.Name,dataResults.Metadata.Desc,dataResults.Kind,dataResults.Metadata.Tag,dataResults.Metadata.Version,subContent.GetDownloadURL()}
+                        plugins := [...]string{dataResults.Metadata.Name,dataResults.Metadata.Desc,dataResults.Kind,dataResults.Metadata.Tag,dataResults.Metadata.Version,subContent.GetDownloadURL(), dataResults.Metadata.PluginStatus}
                         err = db.InsertPlugins(plugins)
                         if err != nil {
                             log.Fatal(err)
