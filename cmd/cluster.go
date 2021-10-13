@@ -76,11 +76,11 @@ func clusterCommand() *cobra.Command{
 				statusOk,_ := clusterOperation.Deployment(strName, strType)
 				if statusOk {			
 					clusterConfig := []string{strName,strType,"","Installed"}
-					fmt.Printf("here")
 					err := db.InsertCluster(clusterConfig)
 					if err != nil {
 						log.Fatal(err)
 					}
+					fmt.Println(" ")
 					color.Done()
 					fmt.Println(" ✔️ Installation Done.")
 				}
@@ -106,7 +106,8 @@ func clusterCommand() *cobra.Command{
 						log.Fatal(err)
 					}
 					color.Done()
-					fmt.Println(" ✔️ Cluster Removal Done.")
+					fmt.Println(" ")
+					fmt.Println(" ✔️	Cluster Removal Done.")
 				}
 			}
 		},

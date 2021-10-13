@@ -1,8 +1,8 @@
 package clusters
 
 import (
-	"context"
 	"bufio"
+	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -10,11 +10,13 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
+
 	//
 	// Uncomment to load all auth plugins
 	// _ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -25,9 +27,9 @@ import (
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/openstack"
 
-	http "github.com/k3ai/pkg/http"
 	internal "github.com/k3ai/internal"
 	color "github.com/k3ai/pkg/color"
+	http "github.com/k3ai/pkg/http"
 )
 
 const (
@@ -43,45 +45,32 @@ var (
 
 
 func Deployment (name string, ctype string) (status bool, err error) {
-
+		action := "install"
 		appPlugin := http.InfrastructureDeployment(ctype)
-		pluginEx := string(appPlugin.Resources[0].Path)
-		pluginArgs := string(appPlugin.Resources[0].Args)
-		if appPlugin.Resources[0].PluginType == "shell" {
-				if pluginEx == "post" {
-					pluginEx = ""
-					exec.Command("/bin/bash","-c",pluginArgs).Output()
-		
-				}
-				cmd := exec.Command("/bin/bash","-c",pluginEx,pluginArgs)
-		
-				r, _ := cmd.StdoutPipe()
-				cmd.Stderr = cmd.Stdout
-				done := make(chan struct{})
-				scanner := bufio.NewScanner(r)
-				go func() {
-					// Read line by line and process it
-					color.Done()
-					fmt.Println(" 🚀 Starting installation...")
-					for scanner.Scan() {
-						line := scanner.Text()
-						color.Disable()
-						fmt.Println(" 🚀 " + line)
+		for i:=0; i < len(appPlugin.Resources); i++ {
+			pluginEx := string(appPlugin.Resources[i].Path)
+			if strings.Contains(pluginEx,"{{name}}") {
+				pluginEx = strings.Replace(pluginEx,"{{name}}",name,-1)
+			}
+			
+			pluginArgs := string(appPlugin.Resources[i].Args)
+			if appPlugin.Resources[i].PluginType == "shell" {
+				if !appPlugin.Resources[i].Wait {
+					err := shell(pluginEx,pluginArgs,false,action)
+					if err != nil {
+						log.Fatal(err)
 					}
-					done <- struct{}{}
-				}()
-				// Start the command and check for errors
-				err := cmd.Start()
-				if err != nil {
-					log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")	
+				} else {
+					err := shell(pluginEx,pluginArgs,true, action)
+					if err != nil {
+						log.Fatal(err)
+					}
 				}
-				<-done
-				err = cmd.Wait()
-				if err != nil {
-					log.Fatal(err)
-				}
-		
+
+			}
 		}
+
+
 
 	status = true
 
@@ -89,39 +78,28 @@ func Deployment (name string, ctype string) (status bool, err error) {
 }
 
 func Removal (name string, ctype string) (status bool, err error) {
-
+	action := "removal"
 	appPlugin := http.InfrastructureDeployment(ctype)
-	pluginEx := string(appPlugin.Resources[0].Remove)
-	pluginArgs := string(appPlugin.Resources[0].Args)
-	if appPlugin.Resources[0].PluginType == "shell" {
-			cmd := exec.Command("/bin/bash","-c",pluginEx,pluginArgs)
-	
-			r, _ := cmd.StdoutPipe()
-			cmd.Stderr = cmd.Stdout
-			done := make(chan struct{})
-			scanner := bufio.NewScanner(r)
-			go func() {
-				// Read line by line and process it
-				color.Done()
-				fmt.Println(" 🚀 Starting installation...")
-				for scanner.Scan() {
-					line := scanner.Text()
-					color.Disable()
-					fmt.Println(" 🚀 " + line)
+		for i:=0; i < len(appPlugin.Resources); i++ {
+			pluginEx := string(appPlugin.Resources[i].Remove)
+			if strings.Contains(pluginEx,"{{name}}") {
+				pluginEx = strings.Replace(pluginEx,"{{name}}",name,-1)
+			}
+			pluginArgs := string(appPlugin.Resources[i].Args)
+			if appPlugin.Resources[i].PluginType == "shell"  {
+				if appPlugin.Resources[i].Wait {
+					err := shell(pluginEx,pluginArgs,false, action)
+					if err != nil {
+						log.Fatal(err)
+					}
+				} else {
+					err := shell(pluginEx,pluginArgs,true, action)
+					if err != nil {
+						log.Fatal(err)
+					}
 				}
-				done <- struct{}{}
-			}()
-			// Start the command and check for errors
-			err := cmd.Start()
-			if err != nil {
-				log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")	
+
 			}
-			<-done
-			err = cmd.Wait()
-			if err != nil {
-				log.Fatal(err)
-			}
-	
 	}
 
 status = true
@@ -181,4 +159,59 @@ func Client (name string,ctype string) (clientset  *kubernetes.Clientset, kubeSt
 	}
 
 	return clientset, kubeStr
+}
+
+func shell(pluginEx string, pluginArgs string, outPrint bool, action string) error {
+		home,_ := os.UserHomeDir()
+		shellPath := home + "/.k3ai"
+		if pluginEx == "post" {
+			pluginEx = ""
+			cmd := exec.Command("/bin/bash","-c",pluginArgs)
+			cmd.Dir = shellPath
+			cmd.Output()
+
+
+		}
+		if action == "install" {
+		color.Done()
+		fmt.Println(" 🚀 Starting installation...")
+		fmt.Println(" ")
+		} else if action == "removal" {
+			color.Done()
+			fmt.Println(" 🚀 Removing installation...")
+			fmt.Println(" ")
+		}
+		cmd := exec.Command("/bin/bash","-c",pluginEx,pluginArgs)
+		cmd.Dir = shellPath
+		r, _ := cmd.StdoutPipe()
+		cmd.Stderr = cmd.Stdout
+		done := make(chan struct{})
+
+		scanner := bufio.NewScanner(r)
+		go func() {
+			// Read line by line and process it
+			msg := "⏳	Working..."
+			fmt.Printf("\r %v", msg)
+			fmt.Println(" ")
+			for scanner.Scan() {
+				line := scanner.Text()
+				color.Disable()
+				if outPrint {
+					fmt.Println(" 🚀 " + line)
+				}
+				
+			}
+			done <- struct{}{}
+		}()
+		// Start the command and check for errors
+		err := cmd.Start()
+		if err != nil {
+			log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")	
+		}
+		<-done
+		err = cmd.Wait()
+		if err != nil {
+			log.Fatal(err)
+		}
+		return err
 }
