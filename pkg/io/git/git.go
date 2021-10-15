@@ -8,9 +8,9 @@ import (
 )
 
 
-func Clone(cloneUrl string) error {
+func Clone(cloneUrl string, name string) error {
 	repository := cloneUrl
-	_, err := git.PlainClone("/home/alefesta/.k3ai/git/katib",false,&git.CloneOptions{
+	_, err := git.PlainClone("/home/alefesta/.k3ai/git/"+name,false,&git.CloneOptions{
 		URL: repository,
 	})
 	if err != nil && err.Error() != "repository already exists" {

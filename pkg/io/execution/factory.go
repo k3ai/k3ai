@@ -123,7 +123,7 @@ func innerPluginResource (name string,base string,url string, action string,clus
 		if len(subPlugin.Resources) > 1 {
 			for k:=0; k < len(subPlugin.Resources); k++{
 				if subPlugin.Resources[k].PluginType == "kustomize" {
-					gh.Clone(subPlugin.Resources[k].Path)
+					gh.Clone(subPlugin.Resources[k].Path, name)
 					kustomize(subPlugin.Resources[k].Path, subPlugin.Resources[k].Args,name,action, strings.ToLower(clusterName))
 				} else if subPlugin.Resources[k].PluginType == "shell"{
 					shell(subPlugin.Resources[k].Path, subPlugin.Resources[k].Args,false,action)
@@ -137,7 +137,7 @@ func innerPluginResource (name string,base string,url string, action string,clus
 		if len(subPlugin.Resources) > 1 {
 			for k:=0; k < len(subPlugin.Resources); k++{
 				if subPlugin.Resources[k].PluginType == "kustomize" {
-					gh.Clone(subPlugin.Resources[k].Path)
+					gh.Clone(subPlugin.Resources[k].Path,name)
 					kustomize(subPlugin.Resources[k].Path, subPlugin.Resources[k].Args,name,action, strings.ToLower(clusterName))
 				} else if subPlugin.Resources[k].PluginType == "shell"{
 					path := strings.Replace(subPlugin.Resources[k].Path,"{{name}}",strings.ToLower(clusterName),-1)
@@ -151,7 +151,7 @@ func innerPluginResource (name string,base string,url string, action string,clus
 			}
 		} else {
 			if subPlugin.Resources[0].PluginType == "kustomize" {
-				gh.Clone(subPlugin.Resources[0].Path)
+				gh.Clone(subPlugin.Resources[0].Path,name)
 				kustomize(subPlugin.Resources[0].Path, subPlugin.Resources[0].Args,name,action,clusterName)
 			} else if subPlugin.Resources[0].PluginType == "shell"{
 				path := strings.Replace(subPlugin.Resources[0].Path,"{{name}}",strings.ToLower(clusterName),-1)
@@ -245,7 +245,7 @@ func kustomize(pluginEx string, pluginArgs string, pluginName string, action str
 	fmt.Println(" 🚀 Starting installation...")
 	fmt.Println(" ")
 	color.Disable()
-	gh.Clone(pluginEx)
+	gh.Clone(pluginEx,pluginName)
 	// path := w.Filesystem.Root()
 	
     cmd:= exec.Command(k3aiKube,"apply","-k",shellPath +"/git/"+ pluginName + "/" + pluginArgs,"--kubeconfig="+ out, "--wait")
@@ -276,21 +276,29 @@ func Client (name string,ctype string) (kubeconfig string) {
 	var cPath string
 	if ctype == "k3s" {
 		cPath ="/etc/rancher/k3s/k3s.yaml"
-	} else {
+	} else if ctype == "eks-a" {
+		cPath = homedir.HomeDir() + "/.k3ai/"+ name +"/"+name+"-eks-a-cluster.kubeconfig"
+	}else {
 		cPath = homedir.HomeDir() + "/.kube/config"
 	}
-	if home := homedir.HomeDir(); home != "" {	
-		out,_ := os.Create(homedir.HomeDir() + "/.k3ai/" + name +".config")
-		in,_ := os.Open(cPath)
-	
+	if home := homedir.HomeDir(); home != "" {
+		if ctype != "eks-a"{
+			out,_ := os.Create(homedir.HomeDir() + "/.k3ai/" + name +".config")
+			in,_ := os.Open(cPath)
 		
-		_, err := io.Copy(out,in)
-		if err != nil {
-			log.Print(err)
+			
+			_, err := io.Copy(out,in)
+			if err != nil {
+				log.Print(err)
+			}
+			out.Close()
+			kubeconfig = homedir.HomeDir() + "/.k3ai/" + name +".config"
+		} else {
+			kubeconfig = homedir.HomeDir() + "/.k3ai/"+ name +"/"+name+"-eks-a-cluster.kubeconfig"
 		}
-		out.Close()
+
 		
 	}
-	kubeconfig = homedir.HomeDir() + "/.k3ai/" + name +".config"
+	
 	return kubeconfig
 }

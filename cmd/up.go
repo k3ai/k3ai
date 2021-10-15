@@ -59,7 +59,7 @@ func upCommand() *cobra.Command{
 					// } 
 					time.Sleep(700 * time.Millisecond)
 					// token = string(bytepw)
-					token ="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"
+					token ="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"
 					
 					_,err,_ = auth.GitHub(token)
 					if err != nil {
