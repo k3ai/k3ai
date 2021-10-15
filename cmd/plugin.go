@@ -3,12 +3,17 @@ package cmd
 import (
 	"os"
 	"fmt"
+	"log"
+	"strings"
   	"github.com/spf13/cobra"
 
 	color "github.com/k3ai/pkg/color"
 	"github.com/k3ai/internal"
 	db "github.com/k3ai/pkg/db"
 	tables "github.com/k3ai/pkg/tables"
+	pluginOperations "github.com/k3ai/pkg/io/execution"
+
+
   
 )
 
@@ -33,9 +38,39 @@ func pluginCommand() *cobra.Command{
 		Use:"deploy [-n NAME] [other flags]",
 		Short: "Deploy a given plugin based on TYPE",
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 0 {
+			strTarget,_ := cmd.Flags().GetString("target")
+			strConf,_ := cmd.Flags().GetString("config")
+			boolQuiet, _ := cmd.Flags().GetBool("quiet")
+			strName,_ := cmd.Flags().GetString("name")
+			strName = strings.ToLower(strName)
+			if len(args) >= 0 &&  strTarget == "" && strConf != "" && strName == ""{
 				cmd.Help()
 				os.Exit(0)
+			}
+			if !boolQuiet  && strName == ""{
+
+				statusOk,_ := pluginOperations.Deployment("plugin",strName, strTarget)
+				if statusOk {			
+					clusterConfig := []string{strName,strTarget,"","Installed"}
+					err := db.InsertCluster(clusterConfig)
+					if err != nil {
+						log.Fatal(err)
+					}
+					color.Done()
+					fmt.Println(" ✔️ Installation Done.")
+					// pluginOperations.Client(strName,strTarget)
+				}
+			} else if !boolQuiet && strName != "" {
+
+				statusOk,_ := pluginOperations.Deployment("plugin",strName, strTarget)
+				if statusOk {	
+					_,clusterType := db.CheckClusterName(strTarget)	
+					out := pluginOperations.Client(strTarget,clusterType)
+					os.Remove(out)
+					fmt.Println(" ")
+					color.Done()
+					fmt.Println(" ✔️ Installation Done.")
+				}
 			}
 		},
 	}

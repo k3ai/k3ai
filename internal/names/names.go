@@ -52,7 +52,7 @@ var right = [...]string {
 
 func GeneratedName(retry int) string {
 	begin:
-		name := left[rand.Intn(len(left))] + "_" + right[rand.Intn(len(right))] //nolint:gosec // G404: Use of weak random number generator (math/rand instead of crypto/rand)
+		name := left[rand.Intn(len(left))] + right[rand.Intn(len(right))] //nolint:gosec // G404: Use of weak random number generator (math/rand instead of crypto/rand)
 		if name == "boring_wozniak" /* Steve Wozniak is not boring */ {
 			goto begin
 		}

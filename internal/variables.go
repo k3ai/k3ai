@@ -43,6 +43,22 @@ type K3aiPlugin struct {
 
 }
 
+type K3aiInternalPlugin struct {
+	Api string `yaml:"api"`
+	Kind string `yaml:"kind"`
+	Metadata struct {
+					Name string `yaml:"name"`
+					Desc string `yaml:"desc"`
+					Tag	string `yaml:"tag,omitempty"`
+					Version string `yaml:"version,omitempty"`
+					PluginType string `yaml:"plugintype"`
+
+	}
+
+	InternalResources []string `yaml:"resources,omitempty"`
+
+}
+
 type K3aiRootPlugin struct {
 	Api string `yaml:"api"`
 	Kind string `yaml:"kind"`

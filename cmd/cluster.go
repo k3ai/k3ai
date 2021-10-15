@@ -12,8 +12,7 @@ import (
 	names "github.com/k3ai/internal/names"
 	color "github.com/k3ai/pkg/color"
 	db "github.com/k3ai/pkg/db"
-	clusterOperation "github.com/k3ai/pkg/io/clusters"
-
+	clusterOperation "github.com/k3ai/pkg/io/execution"
 	tables "github.com/k3ai/pkg/tables"
 )
 
@@ -56,7 +55,7 @@ func clusterCommand() *cobra.Command{
 				}
 				strName = strings.ToLower(strName)
 
-				statusOk,_ := clusterOperation.Deployment(strName, strType)
+				statusOk,_ := clusterOperation.Deployment("cluster",strName, strType)
 				if statusOk {			
 					clusterConfig := []string{strName,strType,"","Installed"}
 					err := db.InsertCluster(clusterConfig)
@@ -73,7 +72,7 @@ func clusterCommand() *cobra.Command{
 					strName = names.GeneratedName(1)
 				}
 				strName = strings.ToLower(strName)
-				statusOk,_ := clusterOperation.Deployment(strName, strType)
+				statusOk,_ := clusterOperation.Deployment("cluster",strName, strType)
 				if statusOk {			
 					clusterConfig := []string{strName,strType,"","Installed"}
 					err := db.InsertCluster(clusterConfig)
@@ -98,7 +97,7 @@ func clusterCommand() *cobra.Command{
 				os.Exit(0)
 			} else {
 				_,ctype := db.CheckClusterName(strName)
-				statusOk,_ := clusterOperation.Removal(strName,ctype)
+				statusOk,_ := clusterOperation.Removal("cluster",strName,ctype)
 				if statusOk {			
 					strName = strings.ToLower(strName)
 					err := db.DeleteCluster(strName)

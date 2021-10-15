@@ -242,6 +242,7 @@ func CheckClusterName(name string) (resname string, ctype string) {
 }
 
 func InsertCluster(clusterConfig []string ) error {
+
 	db := DbLogin()
 	insertStatus := `INSERT INTO clusters VALUES (?,?,?,?);`
 	dbState, err := db.Prepare(insertStatus)
