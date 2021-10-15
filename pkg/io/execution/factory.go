@@ -48,6 +48,8 @@ var (
 	subRootPlugin = &internal.K3aiInternalPlugin{}
 	subPlugin = &internal.AppPlugin{}
 	subPluginResources = &internal.AppPluginResources{}
+	restatus = false
+	strQuiet = true
 ) 
 
 
@@ -206,7 +208,7 @@ func shell(pluginEx string, pluginArgs string, outPrint bool, action string) err
 			for scanner.Scan() {
 				line := scanner.Text()
 				color.Disable()
-				if outPrint {
+				if strQuiet {
 					fmt.Println(" 🚀 " + line)
 				}
 				
@@ -231,6 +233,7 @@ func kustomize(pluginEx string, pluginArgs string, pluginName string, action str
 	out := Client(target,clusterType)
 	home,_ := os.UserHomeDir()
 	shellPath := home + "/.k3ai"
+	
 	// kustomizeBinary := home + k3aiKube
 	if pluginEx == "post" {
 		pluginEx = ""
@@ -241,20 +244,48 @@ func kustomize(pluginEx string, pluginArgs string, pluginName string, action str
 
 	}
 	if action == "install" {
-	color.Done()
-	fmt.Println(" 🚀 Starting installation...")
-	fmt.Println(" ")
-	color.Disable()
+	if !restatus {
+		restatus = true
+		color.Done()
+		fmt.Println(" 🚀 Starting installation...")
+		fmt.Println(" ")
+		color.Disable()
+	}
+
 	gh.Clone(pluginEx,pluginName)
 	// path := w.Filesystem.Root()
 	
     cmd:= exec.Command(k3aiKube,"apply","-k",shellPath +"/git/"+ pluginName + "/" + pluginArgs,"--kubeconfig="+ out, "--wait")
 	cmd.Dir=shellPath
-    cmd.Stdout = os.Stdout
-    cmd.Stderr = os.Stderr
-    err := cmd.Run()
+	r, _ := cmd.StdoutPipe()
+	cmd.Stderr = cmd.Stdout
+	done := make(chan struct{})
+
+	scanner := bufio.NewScanner(r)
+	go func() {
+		// Read line by line and process it
+		msg := "⏳	Working..."
+		fmt.Printf("\r %v", msg)
+		fmt.Println(" ")
+		for scanner.Scan() {
+			line := scanner.Text()
+			color.Disable()
+			if strQuiet {
+				fmt.Println(" 🚀 " + line)
+			}
+			
+		}
+		done <- struct{}{}
+	}()
+	// Start the command and check for errors
+	err := cmd.Start()
 	if err != nil {
-		log.Print(err)
+		log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")	
+	}
+	<-done
+	err = cmd.Wait()
+	if err != nil {
+		log.Fatal(err)
 	}
 	}
 	return nil
