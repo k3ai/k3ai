@@ -78,9 +78,9 @@ func upCommand() *cobra.Command{
 				} else {
 					log.Println("Please create a .env file and place it under K3ai folder. See docs https://docs.k3ai.in")
 				}
-
-
 			}
+
+			if _, err := os.Stat(homeDir + "/.k3ai/k3ai.db"); os.IsNotExist(err) { 
 			msg := "Loading K3ai configuration... "
 			ch := make(chan bool)
 			go config.InitConfig(ch,msg,bForce)
@@ -106,7 +106,8 @@ func upCommand() *cobra.Command{
 			time.Sleep(500 * time.Millisecond)
 			msg = ""
 			msg = "Retrieving plugin list...     "
-			http.RetrievePlugins(token)
+			action:="config"
+			http.RetrievePlugins(token,action)
 			if !bQuiet {
 				loader.StandardLoader(msg)	
 			}else{
@@ -118,7 +119,30 @@ func upCommand() *cobra.Command{
 			} else {
 				log.Print("K3ai  Configuration completed")
 			}
-
+		}else {
+			fmt.Println(" ✔️	Proceeding with configuration,please wait...")
+			fmt.Printf("\n")
+			time.Sleep(1 * time.Second)
+			color.Done()
+			os.Stdin.Close()
+			color.Disable()
+			// ch := make(chan bool)
+			msg := "Updating Plugins..."
+			action:="update"
+			go 	http.RetrievePlugins(token,action)
+			if !bQuiet {
+				loader.StandardLoader(msg)	
+			} 
+			color.Done()
+			msg = "⏳	Completing configuration..."
+			fmt.Printf("\r %v", msg)
+			// <-ch
+			// ch <- true
+			time.Sleep(1 * time.Second)
+			msg = "✔️	Done...                          "
+			fmt.Printf("\r %v", msg)
+			fmt.Println(" ")
+		}
 		},
 	  }
 	  flags := upCmd.Flags()

@@ -98,8 +98,32 @@ func List(name string) (url string) {
 	return url
 }
 
-func Update(sqlDBConn *sql.DB ) {
-
+func UpdatePlugins(plugin [7]string ) error {
+	db := DbLogin()
+	
+	name := strings.ToLower(plugin[0])
+	desc := strings.ToLower(plugin[1])
+	ver := strings.ToLower(plugin[4])
+	tag  := strings.ToLower(plugin[3])
+	pluginType := strings.ToLower(plugin[2])
+	pluginUrl := strings.ToLower(plugin[5])
+	pluginStatus := strings.Title(plugin[6])
+	
+	fillApps := `INSERT OR REPLACE INTO plugins (name,desc,version,tag,ptype,url,status) VALUES (?, ?, ?, ?, ?,?,?);`
+	statement, _:= db.Prepare(fillApps)
+	_,err := statement.Exec(name,desc,ver,tag,pluginType,pluginUrl,pluginStatus)
+	if err != nil {
+		fillNew := `INSERT INTO plugins (name,desc,version,tag,ptype,url,status) VALUES ?, ?, ?, ?, ?,?,?);`
+		alternative, _:= db.Prepare(fillNew)
+		_,err = alternative.Exec(name,desc,ver,tag,pluginType,pluginUrl,pluginStatus)
+		if err != nil {
+			log.Fatal(err)
+		}
+		alternative.Close()
+	}
+	statement.Close()
+	defer statement.Close()
+	return nil
 
 }
 

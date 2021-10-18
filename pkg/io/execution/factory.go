@@ -127,7 +127,10 @@ func innerPluginResource (name string,base string,url string, action string,clus
 				if subPlugin.Resources[k].PluginType == "kustomize" {
 					gh.Clone(subPlugin.Resources[k].Path, name)
 					kustomize(subPlugin.Resources[k].Path, subPlugin.Resources[k].Args,name,action, strings.ToLower(clusterName))
-				} else if subPlugin.Resources[k].PluginType == "shell"{
+				} else if subPlugin.Resources[k].PluginType == "kubectl" {
+					kubectl(subPlugin.Resources[k].Path, subPlugin.Resources[k].Args,name,action, strings.ToLower(clusterName))
+
+				}else  if subPlugin.Resources[k].PluginType == "shell"{
 					shell(subPlugin.Resources[k].Path, subPlugin.Resources[k].Args,false,action)
 					}
 			}	
@@ -141,7 +144,10 @@ func innerPluginResource (name string,base string,url string, action string,clus
 				if subPlugin.Resources[k].PluginType == "kustomize" {
 					gh.Clone(subPlugin.Resources[k].Path,name)
 					kustomize(subPlugin.Resources[k].Path, subPlugin.Resources[k].Args,name,action, strings.ToLower(clusterName))
-				} else if subPlugin.Resources[k].PluginType == "shell"{
+				} else if subPlugin.Resources[k].PluginType == "kubectl" {
+					kubectl(subPlugin.Resources[k].Path, subPlugin.Resources[k].Args,name,action, strings.ToLower(clusterName))
+
+				}else if subPlugin.Resources[k].PluginType == "shell"{
 					path := strings.Replace(subPlugin.Resources[k].Path,"{{name}}",strings.ToLower(clusterName),-1)
 					if action == "remove"{
 						shell(path, subPlugin.Resources[k].Remove,false,action)
@@ -291,7 +297,60 @@ func kustomize(pluginEx string, pluginArgs string, pluginName string, action str
 	return nil
 }
 
+func kubectl(pluginEx string, pluginArgs string, pluginName string, action string, target string) error {
+	_,clusterType := db.CheckClusterName(target)
+	out := Client(target,clusterType)
+	home,_ := os.UserHomeDir()
+	shellPath := home + "/.k3ai"
 
+	// if action == "install" {
+	// 	if !restatus {
+	// 		restatus = true
+	// 		color.Done()
+	// 		fmt.Println(" 🚀 Starting installation...")
+	// 		fmt.Println(" ")
+	// 		color.Disable()
+	// 	}
+	
+		// gh.Clone(pluginEx,pluginName)
+		// path := w.Filesystem.Root()
+		
+		cmd:= exec.Command(k3aiKube,"apply",pluginArgs,"--kubeconfig="+ out, "--wait")
+		cmd.Dir=shellPath
+		r, _ := cmd.StdoutPipe()
+		cmd.Stderr = cmd.Stdout
+		done := make(chan struct{})
+	
+		scanner := bufio.NewScanner(r)
+		go func() {
+			// Read line by line and process it
+			msg := "⏳	Working..."
+			fmt.Printf("\r %v", msg)
+			fmt.Println(" ")
+			for scanner.Scan() {
+				line := scanner.Text()
+				color.Disable()
+				if strQuiet {
+					fmt.Println(" 🚀 " + line)
+				}
+				
+			}
+			done <- struct{}{}
+		}()
+		// Start the command and check for errors
+		err := cmd.Start()
+		if err != nil {
+			log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")	
+		}
+		<-done
+		err = cmd.Wait()
+		if err != nil {
+			log.Fatal(err)
+		}
+		// }
+
+	return err
+}
 
 func WaitForDeployment(clientset *kubernetes.Clientset) {
 	pods, err := clientset.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})

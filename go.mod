@@ -8,7 +8,6 @@ require (
 	github.com/google/go-github/v39 v39.1.0
 	github.com/jedib0t/go-pretty/v6 v6.2.4
 	github.com/mattn/go-sqlite3 v1.14.8
-	github.com/psanford/memfs v0.0.0-20210214183328-a001468d78ef
 	github.com/schollz/progressbar/v3 v3.8.3
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.8.1
