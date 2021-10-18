@@ -17,7 +17,7 @@ func List(listStr string,appsResults []string,infraResults []string,bundlesResul
 			t.SetStyle(table.StyleLight)
 			t.Style().Color.Header = text.Colors{text.Bold}
 			t.SetTitle("APPLICATIONS")
-			t.AppendHeader(table.Row{"Name","Description","Type","Tag","Version","Status"})
+			t.AppendHeader(table.Row{"Name","Description","Kind","Tag","Version","Status"})
 			t.SetColumnConfigs([]table.ColumnConfig{
 				{Number: 1, Colors: text.Colors{text.Color(text.FgYellow),},},
 				{Number: 2, WidthMax: 90, WidthMaxEnforcer: text.WrapText},
@@ -40,7 +40,7 @@ func List(listStr string,appsResults []string,infraResults []string,bundlesResul
 			t.SetStyle(table.StyleLight)
 			t.Style().Color.Header = text.Colors{text.Bold}
 			t.SetTitle("INFRASTRUCTURE")
-			t.AppendHeader(table.Row{"Name","Description","Type","Tag","Version","Status"})
+			t.AppendHeader(table.Row{"Type","Description","Kind","Tag","Version","Status"})
 			t.SetColumnConfigs([]table.ColumnConfig{
 				{Number: 1, Colors: text.Colors{text.Color(text.FgYellow),},},
 				{Number: 2, WidthMax: 90, WidthMaxEnforcer: text.WrapText},
