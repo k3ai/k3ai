@@ -33,6 +33,7 @@ const (
 	kubectlSha256 = "https://dl.k8s.io/v1.22.2/bin/linux/amd64/kubectl.sha256"
 	helmUrl = "https://get.helm.sh/helm-v3.7.0-linux-amd64.tar.gz"
 	nerdctl = ""
+	civoUrl = "https://github.com/civo/cli/releases/download/v0.7.6/civo-0.7.6-linux-amd64.tar.gz"
 
 )
 
@@ -72,6 +73,7 @@ func InitConfig(ch chan bool,msg string,bForce bool) {
 			}
 		}
 		kubectlConfig()
+		civoConfig()
 		helmConfig(ch)
 	  
 	  } else if os.IsNotExist(err) {
@@ -80,6 +82,7 @@ func InitConfig(ch chan bool,msg string,bForce bool) {
 				log.Fatal(err)
 			}
 		kubectlConfig()
+		civoConfig()
 		helmConfig(ch)  
 	  } else {
 		// Schrodinger: file may or may not exist. See err for details.
@@ -154,4 +157,28 @@ func helmConfig (ch chan bool) {
 		log.Fatal(err)
 	}
 	ch <- true
+}
+
+
+func civoConfig () {
+	homedir,_ := os.UserHomeDir()
+	k3aiDir := homedir + "/.k3ai/.tools/"
+
+	_,err := exec.Command("wget",civoUrl,"-P",k3aiDir).Output()
+	if err != nil {
+		log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")
+		os.Exit(0)	
+	}
+	_,err = exec.Command("tar","-xvzf",k3aiDir + "/civo-0.7.6-linux-amd64.tar.gz","-C",k3aiDir).Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+	_,err = exec.Command("/bin/bash","-c","chmod +x" + k3aiDir + "/civo " + k3aiDir).Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+	_,err = exec.Command("/bin/bash","-c","rm " + k3aiDir + "/civo-0.7.6-linux-amd64.tar.gz").Output()
+	if err != nil {
+		log.Fatal(err)
+	}
 }

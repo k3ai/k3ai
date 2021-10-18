@@ -38,7 +38,8 @@ import (
 const (
 	k3aiKube =".tools/kubectl"
 	k3aiHelm = ".tools/helm"
-	lnxApp = "/bin/bash"	
+	lnxApp = "/bin/bash"
+	civoCli = ".tools/civo"	
 )
 var (
 	appPlugin = internal.AppPlugin{}
