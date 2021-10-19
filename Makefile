@@ -15,7 +15,7 @@ GOARCH:=$(shell go env GOARCH)
 
 LDFLAGS:= -w -s
 
-default: test
+default: build
 
 help:
 	@echo 'Management commands for k3ai:'

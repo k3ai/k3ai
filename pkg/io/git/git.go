@@ -2,14 +2,15 @@ package git
 
 import (
 	"fmt"
+	"strings"
 
 	git "github.com/go-git/go-git/v5"
-
 )
 
 
 func Clone(cloneUrl string, name string) error {
 	repository := cloneUrl
+	name = strings.ToLower(name)
 	_, err := git.PlainClone("/home/alefesta/.k3ai/git/"+name,false,&git.CloneOptions{
 		URL: repository,
 	})

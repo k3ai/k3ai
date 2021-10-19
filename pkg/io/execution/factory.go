@@ -151,7 +151,11 @@ func innerPluginResource (name string,base string,url string, action string,clus
 				}else if subPlugin.Resources[k].PluginType == "shell"{
 					path := strings.Replace(subPlugin.Resources[k].Path,"{{name}}",strings.ToLower(clusterName),-1)
 					if action == "remove"{
-						shell(path, subPlugin.Resources[k].Remove,false,action)
+						if subPlugin.Resources[k].Remove != "" {
+							pathRemove := strings.Replace(subPlugin.Resources[k].Remove,"{{name}}",strings.ToLower(clusterName),-1)
+							shell(path, pathRemove,false,action)
+						}
+						
 					} else {
 						shell(path, subPlugin.Resources[k].Args,false,action)
 					}
@@ -195,11 +199,6 @@ func shell(pluginEx string, pluginArgs string, outPrint bool, action string) err
 		color.Done()
 		fmt.Println(" 🚀 Starting installation...")
 		fmt.Println(" ")
-		} else if action == "remove" {
-			color.Done()
-			fmt.Println(" 🚀 Removing installation...")
-			fmt.Println(" ")
-		}
 		cmd := exec.Command("/bin/bash","-c",pluginEx,pluginArgs)
 		cmd.Dir = shellPath
 		r, _ := cmd.StdoutPipe()
@@ -233,6 +232,45 @@ func shell(pluginEx string, pluginArgs string, outPrint bool, action string) err
 			log.Fatal(err)
 		}
 		return err
+		} else if action == "remove" {
+			color.Done()
+			fmt.Println(" 🚀 Removing installation...")
+			fmt.Println(" ")
+			cmd := exec.Command("/bin/bash","-c",pluginArgs)
+			cmd.Dir = shellPath
+			r, _ := cmd.StdoutPipe()
+			cmd.Stderr = cmd.Stdout
+			done := make(chan struct{})
+	
+			scanner := bufio.NewScanner(r)
+			go func() {
+				// Read line by line and process it
+				msg := "⏳	Working..."
+				fmt.Printf("\r %v", msg)
+				fmt.Println(" ")
+				for scanner.Scan() {
+					line := scanner.Text()
+					color.Disable()
+					if strQuiet {
+						fmt.Println(" 🚀 " + line)
+					}
+					
+				}
+				done <- struct{}{}
+			}()
+			// Start the command and check for errors
+			err := cmd.Start()
+			if err != nil {
+				log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")	
+			}
+			<-done
+			err = cmd.Wait()
+			if err != nil {
+				log.Fatal(err)
+			}
+			return err
+		}
+return nil
 }
 
 func kustomize(pluginEx string, pluginArgs string, pluginName string, action string, target string) error {
@@ -369,6 +407,9 @@ func Client (name string,ctype string) (kubeconfig string) {
 		cPath ="/etc/rancher/k3s/k3s.yaml"
 	} else if ctype == "eks-a" {
 		cPath = homedir.HomeDir() + "/.k3ai/"+ name +"/"+name+"-eks-a-cluster.kubeconfig"
+	}else  if ctype == "tanzu" {
+		cPath = homedir.HomeDir() + "/.kube-tkg/config"
+	
 	}else {
 		cPath = homedir.HomeDir() + "/.kube/config"
 	}
