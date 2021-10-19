@@ -15,7 +15,6 @@ BODY: We have to do the following actions:
 package env
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -114,8 +113,6 @@ func Config ()  {
 			log.Fatal(err)
 		}
 	}
-	x := viper.GetString("default.base_url")
-	fmt.Print(x)
 }
 
 func kubectlConfig () {
@@ -169,15 +166,23 @@ func civoConfig () {
 		log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")
 		os.Exit(0)	
 	}
-	_,err = exec.Command("tar","-xvzf",k3aiDir + "/civo-0.7.6-linux-amd64.tar.gz","-C",k3aiDir).Output()
+	_,err = exec.Command("/bin/bash", "-c","mkdir " + k3aiDir + "/civodir").Output()
 	if err != nil {
 		log.Fatal(err)
 	}
-	_,err = exec.Command("/bin/bash","-c","chmod +x" + k3aiDir + "/civo " + k3aiDir).Output()
+	_,err = exec.Command("tar", "-xvzf",k3aiDir + "/civo-0.7.6-linux-amd64.tar.gz", "-C",k3aiDir + "/civodir").Output()
 	if err != nil {
 		log.Fatal(err)
 	}
-	_,err = exec.Command("/bin/bash","-c","rm " + k3aiDir + "/civo-0.7.6-linux-amd64.tar.gz").Output()
+	_,err = exec.Command("/bin/bash","-c","mv " + k3aiDir + "civodir/civo " + k3aiDir).Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+	_,err = exec.Command("/bin/bash","-c","rm " + "-r " + k3aiDir + "/civodir").Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+	_,err = exec.Command("/bin/bash","-c","rm " + "-r " + k3aiDir + "/civo-0.7.6-linux-amd64.tar.gz").Output()
 	if err != nil {
 		log.Fatal(err)
 	}
