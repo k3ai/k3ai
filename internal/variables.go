@@ -8,22 +8,24 @@ var (
 
 
 type Options struct {
-	Quiet	bool
-	Config  string
-	All		bool
-	Force	bool
-	Deploy	bool
-	Remove	bool
-	Name 	string
-	Type 	string
-	Target 	string
-	Filter  string
-	Deployed bool
+	Quiet		bool
+	Config  	string
+	All			bool
+	Force		bool
+	Deploy		bool
+	Remove		bool
+	Name 		string
+	Type 		string
+	Target 		string
+	Filter  	string
+	Deployed 	bool
+	Code    	string
+	Backend		string
 }
 
 
 type Env struct {
-	GH_AUTH_TOKEN	string `yaml:"GITHUB_AUTH_TOKEN"`
+	K3AI_TOKEN	string `yaml:"K3AI_TOKEN"`
 }
 
 

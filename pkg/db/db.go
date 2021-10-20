@@ -98,7 +98,7 @@ func List(name string) (url string) {
 	return url
 }
 
-func UpdatePlugins(plugin [7]string ) error {
+func UpdatePlugins(plugin [7]string) error {
 	db := DbLogin()
 	
 	name := strings.ToLower(plugin[0])

@@ -5,11 +5,12 @@ import (
 	"log"
 	"os"
 	"time"
-	// "syscall"
+	"syscall"
 
-	// "golang.org/x/term"
+	"golang.org/x/term"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/manifoldco/promptui"
 
 	internal "github.com/k3ai/internal"
 	auth "github.com/k3ai/pkg/auth"
@@ -25,14 +26,17 @@ func upCommand() *cobra.Command{
 	homeDir,_ := os.UserHomeDir()
 	up := internal.Options{}
 	upCmd := &cobra.Command{
-		Use:   "up [-h --help] [-q --quiet] [-f --force] [-c fileOrUrl]",
+		Use:   "up [-h --help] [-q --quiet] [-c fileOrUrl]",
 		Short: "K3ai starting point. Up configure K3ai to work on local environment",
 		Run: func(cmd *cobra.Command, args []string) {
 			bQuiet,_ :=cmd.Flags().GetBool("quiet")
-			bForce, _ := cmd.Flags().GetBool("force")
-			if _, err := os.Stat(homeDir + "/.k3ai/.env"); !os.IsNotExist(err) {
+			sConfig,_ := cmd.Flags().GetString("config")
+			if _, err := os.Stat(homeDir + "/.config"); os.IsNotExist(err) {
+				os.Mkdir(homeDir + "/.config",0755)
+				}
+			if _, err := os.Stat(homeDir + "/.config/k3ai/.env"); !os.IsNotExist(err) {
 			
-			    viper.AddConfigPath(homeDir + "/.k3ai")
+			    viper.AddConfigPath(homeDir + "/.config/k3ai")
 				viper.SetConfigName(".env")
 				viper.SetConfigType("env")
 				viper.AutomaticEnv()
@@ -44,23 +48,29 @@ func upCommand() *cobra.Command{
 				if err != nil {
 					log.Fatal(err)
 				}
-				token = envConfig.GH_AUTH_TOKEN
+				token = envConfig.K3AI_TOKEN
 				_,err,_ := auth.GitHub(token)
 				if err != nil {
 					log.Fatal("GitHub Authentication Token:  NOT OK")
 				} 
 				} else {
 				if !bQuiet {
-					color.Alert()
-					// fmt.Println(" ❌	Missing GitHub Authentication Token, please paste it here:")
-					// bytepw, err := term.ReadPassword(int(syscall.Stdin))
-					// if err != nil {
-					// 	os.Exit(1)
-					// } 
+					color.White()
 					time.Sleep(700 * time.Millisecond)
-					// token = string(bytepw)
-					token ="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"
-					
+					fmt.Println("🎉🎉🎉 Welcome to K3ai 🎉🎉🎉")
+					fmt.Println("📢	Give us a second and we will start the process...")
+					time.Sleep(1 * time.Second)
+					color.Alert()
+					// comment from here to below to bypass
+					fmt.Println(" ❌	Missing GitHub Authentication Token, please paste it here:")
+					bytepw, err := term.ReadPassword(int(syscall.Stdin))
+					if err != nil {
+						os.Exit(1)
+					}
+					token = string(bytepw)
+					//comment above to bypass
+					// token ="" //add token to bypass
+					time.Sleep(700 * time.Millisecond)		
 					_,err,_ = auth.GitHub(token)
 					if err != nil {
 						fmt.Println(" ❌	GitHub Authentication Token:  NOT OK")
@@ -68,6 +78,22 @@ func upCommand() *cobra.Command{
 					}else {
 					fmt.Println(" ✔️	GitHub Authentication Token: OK")
 					time.Sleep(800 * time.Millisecond)
+					}
+					fmt.Println(" ❔	To avoid asking for the token everytime, are you ok if we save it as .env variable?")
+					prompt := promptui.Select{
+						Label: "Select[Yes/No]",
+						Items: []string{"Yes", "No"},
+					}
+					_, result, err := prompt.Run()
+					if err != nil {
+						log.Fatalf("Prompt failed %v\n", err)
+					}
+					if result == "Yes" {
+						os.Mkdir(homeDir + "/.config/k3ai",0755)
+						// os.WriteFile(homeDir + ".config/k3ai/.env",bytepw,0664)
+						viper.AddConfigPath(homeDir + "/.config/k3ai")
+						viper.Set("K3AI_TOKEN",token)
+						viper.SafeWriteConfigAs(homeDir + "/.config/k3ai/.env")
 					}
 					fmt.Println(" ✔️	Proceeding with configuration,please wait...")
 					fmt.Printf("\n")
@@ -81,73 +107,99 @@ func upCommand() *cobra.Command{
 			}
 
 			if _, err := os.Stat(homeDir + "/.k3ai/k3ai.db"); os.IsNotExist(err) { 
-			msg := "Loading K3ai configuration... "
-			ch := make(chan bool)
-			go config.InitConfig(ch,msg,bForce)
-			if !bQuiet {
-				loader.StandardLoader(msg)	
-			} 
-			color.Done()
-			msg = "⏳	Completing configuration..."
-			fmt.Printf("\r %v", msg)
-			<-ch
-			msg = "✔️	Done...                          "
-			fmt.Printf("\r %v", msg)
-			time.Sleep(900 * time.Millisecond)
-			msg = ""
-			msg = "Creating database...          "
-			ch = make(chan bool)
-			go db.InitDB(ch)
-			if !bQuiet {
-				loader.StandardLoader(msg)	
-			}else{
-				log.Print(msg)
-			}
-			time.Sleep(500 * time.Millisecond)
-			msg = ""
-			msg = "Retrieving plugin list...     "
-			action:="config"
-			http.RetrievePlugins(token,action)
-			if !bQuiet {
-				loader.StandardLoader(msg)	
-			}else{
-				log.Print(msg)
-			}
-			if !bQuiet {
+				msg := "Loading K3ai configuration... "
+				ch := make(chan bool)
+				go config.InitConfig(ch,msg,sConfig)
+				if !bQuiet {
+					loader.StandardLoader(msg)
+					color.Done()
+					msg = "⏳	Completing configuration..."
+					fmt.Printf("\r %v", msg)
+				} else {
+					color.Disable()
+					msg = "Completing configuration..."
+					fmt.Printf("\r %v", msg)
+				}
+				<-ch
+				if !bQuiet {
+					msg = "✔️	Done...                          "
+					fmt.Printf("\r %v", msg)
+				} else {
+					msg = "Done...                          "
+					fmt.Printf("\r %v", msg)
+				}
+
+				time.Sleep(900 * time.Millisecond)
+				msg = ""
+				msg = "Creating database...          "
+				ch = make(chan bool)
+				go db.InitDB(ch)
+				if !bQuiet {
+					loader.StandardLoader(msg)	
+				}else{
+					log.Print(msg)
+				}
+				<- ch
+				time.Sleep(500 * time.Millisecond)
+				msg = ""
+				msg = "Retrieving plugin list...     "
+				ch = make(chan bool)
+				action:="config"
+				go http.RetrievePlugins(token,action,ch)
+				if !bQuiet {
+					loader.StandardLoader(msg)	
+					color.Done()
+					msg = "⏳	Finishing retrieving plugins..."
+					fmt.Printf("\r %v", msg)
+				} else {
+					color.Disable()
+					msg = "Finishing Retrieving plugins..."
+					fmt.Printf("\r %v", msg)
+				}
+				<-ch
+				if !bQuiet {
+					msg = "✔️	Done...                          "
+					fmt.Printf("\r %v", msg)
+				} else {
+					msg = "Done...                          "
+					fmt.Printf("\r %v", msg)
+				}
+				time.Sleep(500 * time.Millisecond)
+				if !bQuiet {
+					color.Done()
+					fmt.Println(" ")
+					fmt.Println(" ✔️	K3ai Configuration completed ")	
+				} else {
+					log.Print("K3ai  Configuration completed")
+				}
+
+			}else {
+				fmt.Println(" ✔️	Proceeding with configuration,please wait...")
+				fmt.Printf("\n")
+				time.Sleep(1 * time.Second)
 				color.Done()
-				fmt.Println(" ✔️	K3ai Configuration completed ")	
-			} else {
-				log.Print("K3ai  Configuration completed")
+				os.Stdin.Close()
+				color.Disable()
+				ch := make(chan bool)
+				msg := "Updating Plugins..."
+				action:="update"
+				go 	http.RetrievePlugins(token,action,ch)
+				if !bQuiet {
+					loader.StandardLoader(msg)	
+				} 
+				color.Done()
+				msg = "⏳	Completing configuration..."
+				fmt.Printf("\r %v", msg)
+				time.Sleep(1 * time.Second)
+				msg = "✔️	Done...                          "
+				fmt.Printf("\r %v", msg)
+				fmt.Println(" ")
+				<- ch
 			}
-		}else {
-			fmt.Println(" ✔️	Proceeding with configuration,please wait...")
-			fmt.Printf("\n")
-			time.Sleep(1 * time.Second)
-			color.Done()
-			os.Stdin.Close()
-			color.Disable()
-			// ch := make(chan bool)
-			msg := "Updating Plugins..."
-			action:="update"
-			go 	http.RetrievePlugins(token,action)
-			if !bQuiet {
-				loader.StandardLoader(msg)	
-			} 
-			color.Done()
-			msg = "⏳	Completing configuration..."
-			fmt.Printf("\r %v", msg)
-			// <-ch
-			// ch <- true
-			time.Sleep(1 * time.Second)
-			msg = "✔️	Done...                          "
-			fmt.Printf("\r %v", msg)
-			fmt.Println(" ")
+			},
 		}
-		},
-	  }
 	  flags := upCmd.Flags()
 	  flags.BoolVarP(&up.Quiet,"quiet","q",false,"Suppress output messages. Useful when k3ai is used within scripts.")
-	  flags.BoolVarP(&up.Force,"force","f",false,"Force re-configuration of K3ai. Will overwrite existing configuration.")
 	  flags.StringVarP(&up.Config,"config","c","","Configure K3ai using a custom config file.[-c /path/tofile] [-c https://urlToFile]")
 	  return upCmd
 }

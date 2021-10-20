@@ -41,17 +41,17 @@ Check if a previous environment exist in both $HOME/.config/k3ai and $HOME/.k3ai
 		a. If folders do not exist we have to create them
 		b. If folder exist we try to read them, if error we will exit and inform the user
 */
-func InitConfig(ch chan bool,msg string,bForce bool) {
+func InitConfig(ch chan bool,msg string,sConfig string) {
 	var homeDir,_ = os.UserHomeDir()
 	if _, err := os.Stat(homeDir + configPath); !os.IsNotExist(err) { 
-		if bForce {
-			os.RemoveAll(homeDir + configPath)
-			err := os.Mkdir(homeDir + configPath, 0755)
-			if err != nil {
-				log.Fatal(err)
-			}
-			Config()	
-		}
+		// if bForce {
+		// 	os.RemoveAll(homeDir + configPath)
+		// 	err := os.Mkdir(homeDir + configPath, 0755)
+		// 	if err != nil {
+		// 		log.Fatal(err)
+		// 	}
+		// 	Config()	
+		// }
 		Config()
 	  } else if os.IsNotExist(err) {
 		err := os.Mkdir(homeDir + configPath, 0755)
@@ -64,13 +64,13 @@ func InitConfig(ch chan bool,msg string,bForce bool) {
 	  
 	  }
 	  if _, err := os.Stat(homeDir + k3aiPath); !os.IsNotExist(err) {
-		if bForce {
-			os.RemoveAll(homeDir + k3aiPath)
-			err := os.Mkdir(homeDir + k3aiPath , 0755)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
+		// if bForce {
+		// 	os.RemoveAll(homeDir + k3aiPath)
+		// 	err := os.Mkdir(homeDir + k3aiPath , 0755)
+		// 	if err != nil {
+		// 		log.Fatal(err)
+		// 	}
+		// }
 		kubectlConfig()
 		civoConfig()
 		helmConfig(ch)

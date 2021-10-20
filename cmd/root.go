@@ -48,6 +48,7 @@ func init() {
 		downCommand(),
 		clusterCommand(),
 		pluginCommand(),
+		runCommand(),
 		versionCommand(),
 	)
 }

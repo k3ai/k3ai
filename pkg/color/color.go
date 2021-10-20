@@ -20,3 +20,7 @@ func InProgress() {
 	color.Set(color.FgYellow)
 }
 
+func White() {
+	color.Set(color.FgHiWhite)
+}
+

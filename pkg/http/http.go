@@ -41,7 +41,7 @@ func Download(url string) ([]byte, error) {
 }
 
 
-func RetrievePlugins(token string, action string) {
+func RetrievePlugins(token string, action string, ch chan bool) {
     var baseUser string
     var baseRepo string
     var homeDir,_ = os.UserHomeDir()
@@ -85,8 +85,11 @@ func RetrievePlugins(token string, action string) {
                         plugins := [...]string{dataResults.Metadata.Name,dataResults.Metadata.Desc,dataResults.Kind,dataResults.Metadata.Tag,dataResults.Metadata.Version,subContent.GetDownloadURL(), dataResults.Metadata.PluginStatus}
                         if action == "config" {
                             err = db.InsertPlugins(plugins)
+
+
                         } else if action == "update" {
                             err = db.UpdatePlugins(plugins)
+
                         }
                         
                         if err != nil {
@@ -97,5 +100,5 @@ func RetrievePlugins(token string, action string) {
             }
         }
     }
-
+    ch <- true
 }

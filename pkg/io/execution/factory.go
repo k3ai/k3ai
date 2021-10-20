@@ -297,10 +297,10 @@ func kustomize(pluginEx string, pluginArgs string, pluginName string, action str
 		color.Disable()
 	}
 
-	gh.Clone(pluginEx,pluginName)
+	// gh.Clone(pluginEx,pluginName)
 	// path := w.Filesystem.Root()
 	
-    cmd:= exec.Command(k3aiKube,"apply","-k",shellPath +"/git/"+ pluginName + "/" + pluginArgs,"--kubeconfig="+ out, "--wait")
+    cmd:= exec.Command(k3aiKube,"apply","-k",shellPath +"/git/" + pluginArgs,"--kubeconfig="+ out, "--wait")
 	cmd.Dir=shellPath
 	r, _ := cmd.StdoutPipe()
 	cmd.Stderr = cmd.Stdout
@@ -333,6 +333,7 @@ func kustomize(pluginEx string, pluginArgs string, pluginName string, action str
 		log.Fatal(err)
 	}
 	}
+	os.RemoveAll(shellPath +"/git/")
 	return nil
 }
 
