@@ -27,7 +27,6 @@ import (
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/openstack"
 
-	
 	internal "github.com/k3ai/internal"
 	color "github.com/k3ai/pkg/color"
 	db "github.com/k3ai/pkg/db"
@@ -36,7 +35,7 @@ import (
 )
 
 const (
-	k3aiKube =".tools/kubectl"
+	k3aiKube ="/.tools/kubectl"
 	k3aiHelm = ".tools/helm"
 	lnxApp = "/bin/bash"
 	civoCli = ".tools/civo"	
@@ -133,7 +132,9 @@ func innerPluginResource (name string,base string,url string, action string,clus
 
 				}else  if subPlugin.Resources[k].PluginType == "shell"{
 					shell(subPlugin.Resources[k].Path, subPlugin.Resources[k].Args,false,action)
-					}
+				}else  if subPlugin.Resources[k].PluginType == "helm"{
+					helm(subPlugin.Resources[k].Path, subPlugin.Resources[k].Args,name,action, strings.ToLower(clusterName))
+				}
 			}	
 		}		
 	} else {
@@ -160,6 +161,8 @@ func innerPluginResource (name string,base string,url string, action string,clus
 						shell(path, subPlugin.Resources[k].Args,false,action)
 					}
 					
+				}else  if subPlugin.Resources[k].PluginType == "helm"{
+						helm(subPlugin.Resources[k].Path, subPlugin.Resources[k].Args,name,action, strings.ToLower(clusterName))
 				}
 			}
 		} else {
@@ -176,6 +179,8 @@ func innerPluginResource (name string,base string,url string, action string,clus
 					shell(path, subPlugin.Resources[0].Args,false,action)
 				}
 				
+			}else  if subPlugin.Resources[0].PluginType == "helm"{
+					helm(subPlugin.Resources[0].Path, subPlugin.Resources[0].Args,name,action, strings.ToLower(clusterName))
 			}
 		}
 	}
@@ -343,53 +348,63 @@ func kubectl(pluginEx string, pluginArgs string, pluginName string, action strin
 	home,_ := os.UserHomeDir()
 	shellPath := home + "/.k3ai"
 
-	// if action == "install" {
-	// 	if !restatus {
-	// 		restatus = true
-	// 		color.Done()
-	// 		fmt.Println(" 🚀 Starting installation...")
-	// 		fmt.Println(" ")
-	// 		color.Disable()
-	// 	}
-	
-		// gh.Clone(pluginEx,pluginName)
-		// path := w.Filesystem.Root()
-		
-		cmd:= exec.Command(k3aiKube,"apply",pluginArgs,"--kubeconfig="+ out, "--wait")
-		cmd.Dir=shellPath
-		r, _ := cmd.StdoutPipe()
-		cmd.Stderr = cmd.Stdout
-		done := make(chan struct{})
-	
-		scanner := bufio.NewScanner(r)
-		go func() {
-			// Read line by line and process it
-			msg := "⏳	Working..."
-			fmt.Printf("\r %v", msg)
+	if action == "install" {
+		if !restatus {
+			restatus = true
+			color.Done()
+			fmt.Println(" 🚀 Starting installation...")
 			fmt.Println(" ")
-			for scanner.Scan() {
-				line := scanner.Text()
-				color.Disable()
-				if strQuiet {
-					fmt.Println(" 🚀 " + line)
-				}
-				
-			}
-			done <- struct{}{}
-		}()
-		// Start the command and check for errors
-		err := cmd.Start()
-		if err != nil {
-			log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")	
+			color.Disable()
 		}
-		<-done
-		err = cmd.Wait()
-		if err != nil {
-			log.Fatal(err)
-		}
-		// }
+		color.InProgress()
+		fmt.Println(" 🚀 Working on the installation...")	
+		outcome,_ := exec.Command("/bin/bash","-c", shellPath + k3aiKube + " "+ pluginEx +" --kubeconfig="+ out).Output()
+		fmt.Println(string(outcome))
+	}
+	return nil
+}
 
-	return err
+
+func helm(pluginEx string, pluginArgs string, pluginName string, action string, target string) error {
+	// var cmd *exec.Cmd
+	_,clusterType := db.CheckClusterName(target)
+	out := Client(target,clusterType)
+	home,_ := os.UserHomeDir()
+	shellPath := home + "/.k3ai"
+
+	if action == "install" {
+		if !restatus {
+			restatus = true
+			color.Done()
+			fmt.Println(" 🚀 Starting installation...")
+			fmt.Println(" ")
+			color.Disable()
+		}
+
+		if strings.Contains(pluginEx,"repo add") {
+			// pluginEx = strings.Replace(pluginEx,"repo add","",-1)
+			color.InProgress()
+			fmt.Println(" 🚀 Adding Helm repo...")
+			outcome,err := exec.Command("/bin/bash","-c", shellPath + "/.tools/helm "+ pluginEx).Output()
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println(string(outcome))
+		}else {
+			color.InProgress()
+			fmt.Println(" 🚀 Working on the installation...")
+			outcome,err := exec.Command("/bin/bash","-c", shellPath + "/.tools/helm "+ pluginEx + " --kubeconfig="+ out).Output()
+			if err != nil {
+				log.Fatal(err)
+			}
+			color.Disable()
+			fmt.Println(string(outcome))
+			
+		}
+	}
+
+
+	return nil
 }
 
 func WaitForDeployment(clientset *kubernetes.Clientset) {
