@@ -18,6 +18,6 @@ func Clone(cloneUrl string, name string) error {
 			fmt.Printf("%v", err)
 			return err
 	}
-	fmt.Println("Repository cloned")
+	// fmt.Println("Repository cloned")
 	return nil
 }

@@ -158,6 +158,7 @@ func innerPluginResource (name string,base string,url string, action string,clus
 						}
 						
 					} else {
+						
 						shell(path, subPlugin.Resources[k].Args,false,action)
 					}
 					
@@ -241,7 +242,7 @@ func shell(pluginEx string, pluginArgs string, outPrint bool, action string) err
 			color.Done()
 			fmt.Println(" 🚀 Removing installation...")
 			fmt.Println(" ")
-			cmd := exec.Command("/bin/bash","-c",pluginArgs)
+			cmd := exec.Command("/bin/bash","-c",pluginEx)
 			cmd.Dir = shellPath
 			r, _ := cmd.StdoutPipe()
 			cmd.Stderr = cmd.Stdout
@@ -302,10 +303,8 @@ func kustomize(pluginEx string, pluginArgs string, pluginName string, action str
 		color.Disable()
 	}
 
-	// gh.Clone(pluginEx,pluginName)
-	// path := w.Filesystem.Root()
-	
-    cmd:= exec.Command(k3aiKube,"apply","-k",shellPath +"/git/" + pluginArgs,"--kubeconfig="+ out, "--wait")
+
+    cmd:= exec.Command("/bin/bash","-c", shellPath + k3aiKube + " "+ "apply -k " + shellPath +"/git/" + pluginArgs +" --kubeconfig="+ out + " --wait")
 	cmd.Dir=shellPath
 	r, _ := cmd.StdoutPipe()
 	cmd.Stderr = cmd.Stdout
@@ -328,15 +327,17 @@ func kustomize(pluginEx string, pluginArgs string, pluginName string, action str
 		done <- struct{}{}
 	}()
 	// Start the command and check for errors
-	err := cmd.Start()
-	if err != nil {
-		log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")	
-	}
+	_ = cmd.Start()
+	// if err != nil {
+	// 	log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")	
+	// }
 	<-done
-	err = cmd.Wait()
-	if err != nil {
-		log.Fatal(err)
-	}
+	_,_ = exec.Command("/bin/bash","-c", shellPath + k3aiKube + " wait --for=condition=Ready pods --all --all-namespaces  --kubeconfig="+ out).Output()
+	// fmt.Println(string(outcome))
+	_ = cmd.Wait()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 	}
 	os.RemoveAll(shellPath +"/git/")
 	return nil
