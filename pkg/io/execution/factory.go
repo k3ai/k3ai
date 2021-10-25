@@ -27,6 +27,7 @@ import (
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/openstack"
 
+	
 	internal "github.com/k3ai/internal"
 	color "github.com/k3ai/pkg/color"
 	db "github.com/k3ai/pkg/db"
@@ -53,7 +54,7 @@ var (
 ) 
 
 
-func Deployment (actionType string,name string, ctype string) (status bool, err error) {
+func Deployment (actionType string,name string, ctype string, extras string) (status bool, err error) {
 		
 		if actionType == "cluster" {
 			url := db.List(ctype)
@@ -61,10 +62,10 @@ func Deployment (actionType string,name string, ctype string) (status bool, err 
 			_ = yaml.Unmarshal([]byte(data), &rootPlugin)
 			if len(rootPlugin.Resources) > 1 {
 				for i:=0; i < len(rootPlugin.Resources);i++{
-					_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[i]),url,"install",name)
+					_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[i]),url,"install",name, extras)
 				}
 			} else {
-				_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[0]),url,"install",name)
+				_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[0]),url,"install",name, extras)
 			}
 		}else {
 			url := db.List(name)
@@ -72,17 +73,17 @@ func Deployment (actionType string,name string, ctype string) (status bool, err 
 			_ = yaml.Unmarshal([]byte(data), &rootPlugin)
 			if len(rootPlugin.Resources) > 1 {
 				for i:=0; i < len(rootPlugin.Resources);i++{
-					_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[i]),url,"install",ctype)
+					_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[i]),url,"install",ctype, extras)
 				}
 			} else {
-				_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[0]),url,"install",ctype)
+				_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[0]),url,"install",ctype, extras)
 			}
 		}
 	return true,nil
 }
 
 func Removal (actionType string,name string, ctype string) (status bool, err error) {
-
+	var extras string
 	if actionType == "cluster" {
 		clusterResults := db.ListClustersByName()
 		url := db.List(clusterResults[1])
@@ -90,10 +91,10 @@ func Removal (actionType string,name string, ctype string) (status bool, err err
 		_ = yaml.Unmarshal([]byte(data), &rootPlugin)
 		if len(rootPlugin.Resources) > 1 {
 			for i:=0; i < len(rootPlugin.Resources);i++{
-				_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[i]),url,"remove",name)
+				_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[i]),url,"remove",name,extras)
 			}
 		} else {
-			_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[0]),url,"remove",name)
+			_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[0]),url,"remove",name,extras)
 		}
 	}else {
 		url := db.List(name)
@@ -101,17 +102,17 @@ func Removal (actionType string,name string, ctype string) (status bool, err err
 		_ = yaml.Unmarshal([]byte(data), &rootPlugin)
 		if len(rootPlugin.Resources) > 1 {
 			for i:=0; i < len(rootPlugin.Resources);i++{
-				_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[i]),url,"remove",name)
+				_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[i]),url,"remove",name,extras)
 			}
 		} else {
-			_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[0]),url,"remove",name)
+			_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[0]),url,"remove",name,extras)
 		}
 	}
 return true,nil
 }
 
 
-func innerPluginResource (name string,base string,url string, action string,clusterName string) error {
+func innerPluginResource (name string,base string,url string, action string,clusterName string, extras string) error {
 	if strings.Contains(base,"../../") {
 		name = strings.ToLower(name)
 		base = strings.TrimLeft(base,"../..") + "/k3ai.yaml"
@@ -131,7 +132,7 @@ func innerPluginResource (name string,base string,url string, action string,clus
 					kubectl(subPlugin.Resources[k].Path, subPlugin.Resources[k].Args,name,action, strings.ToLower(clusterName))
 
 				}else  if subPlugin.Resources[k].PluginType == "shell"{
-					shell(subPlugin.Resources[k].Path, subPlugin.Resources[k].Args,false,action)
+					shell(subPlugin.Resources[k].Path, subPlugin.Resources[k].Args,false,action,extras)
 				}else  if subPlugin.Resources[k].PluginType == "helm"{
 					helm(subPlugin.Resources[k].Path, subPlugin.Resources[k].Args,name,action, strings.ToLower(clusterName))
 				}
@@ -154,12 +155,12 @@ func innerPluginResource (name string,base string,url string, action string,clus
 					if action == "remove"{
 						if subPlugin.Resources[k].Remove != "" {
 							pathRemove := strings.Replace(subPlugin.Resources[k].Remove,"{{name}}",strings.ToLower(clusterName),-1)
-							shell(path, pathRemove,false,action)
+							shell(path, pathRemove,false,action,extras)
 						}
 						
 					} else {
 						
-						shell(path, subPlugin.Resources[k].Args,false,action)
+						shell(path, subPlugin.Resources[k].Args,false,action,extras)
 					}
 					
 				}else  if subPlugin.Resources[k].PluginType == "helm"{
@@ -174,10 +175,10 @@ func innerPluginResource (name string,base string,url string, action string,clus
 				path := strings.Replace(subPlugin.Resources[0].Path,"{{name}}",strings.ToLower(clusterName),-1)
 				if action == "remove"{
 					removePath := strings.Replace(subPlugin.Resources[0].Remove,"{{name}}",strings.ToLower(clusterName),-1)
-					shell(removePath, "",false,action)
+					shell(removePath, "",false,action, extras)
 					db.DeleteCluster(strings.ToLower(clusterName))
 				} else {
-					shell(path, subPlugin.Resources[0].Args,false,action)
+					shell(path, subPlugin.Resources[0].Args,false,action,extras)
 				}
 				
 			}else  if subPlugin.Resources[0].PluginType == "helm"{
@@ -189,7 +190,7 @@ func innerPluginResource (name string,base string,url string, action string,clus
 }
 
 
-func shell(pluginEx string, pluginArgs string, outPrint bool, action string) error {
+func shell(pluginEx string, pluginArgs string, outPrint bool, action string, extras string) error {
 		home,_ := os.UserHomeDir()
 		shellPath := home + "/.k3ai"
 		
@@ -205,7 +206,11 @@ func shell(pluginEx string, pluginArgs string, outPrint bool, action string) err
 		color.Done()
 		fmt.Println(" 🚀 Starting installation...")
 		fmt.Println(" ")
-		cmd := exec.Command("/bin/bash","-c",pluginEx,pluginArgs)
+		if extras != ""{
+			pluginArgs = pluginArgs + " " + extras
+		}
+		pluginEx = strings.Replace(pluginEx,"{{extras}}",pluginArgs,-1)
+		cmd := exec.Command("/bin/bash","-c",pluginEx )
 		cmd.Dir = shellPath
 		r, _ := cmd.StdoutPipe()
 		cmd.Stderr = cmd.Stdout

@@ -49,7 +49,7 @@ func pluginCommand() *cobra.Command{
 			}
 			if !boolQuiet  && strName == ""{
 
-				statusOk,_ := pluginOperations.Deployment("plugin",strName, strTarget)
+				statusOk,_ := pluginOperations.Deployment("plugin",strName, strTarget, extraArray)
 				if statusOk {			
 					clusterConfig := []string{strName,strTarget,"","Installed"}
 					err := db.InsertCluster(clusterConfig)
@@ -62,7 +62,7 @@ func pluginCommand() *cobra.Command{
 				}
 			} else if !boolQuiet && strName != "" {
 
-				statusOk,_ := pluginOperations.Deployment("plugin",strName, strTarget)
+				statusOk,_ := pluginOperations.Deployment("plugin",strName, strTarget, extraArray)
 				if statusOk {	
 					_,clusterType := db.CheckClusterName(strTarget)	
 					out := pluginOperations.Client(strTarget,clusterType)

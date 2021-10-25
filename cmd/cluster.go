@@ -16,6 +16,7 @@ import (
 	tables "github.com/k3ai/pkg/tables"
 )
 
+var extraArray string
 
 func clusterCommand() *cobra.Command{
 	cluster := internal.Options{}
@@ -43,7 +44,8 @@ func clusterCommand() *cobra.Command{
 			boolQuiet, _ := cmd.Flags().GetBool("quiet")
 			strName,_ := cmd.Flags().GetString("name")
 			strName = strings.ToLower(strName)
-			if len(args) >= 0 &&  strType == "" && strConf != "" && strName == ""{
+			arrExtras,_ := cmd.Flags().GetString("extras")
+			if len(args) == 0 &&  strType == "" && strConf == "" && strName == ""{
 				cmd.Help()
 				os.Exit(0)
 			}
@@ -54,8 +56,7 @@ func clusterCommand() *cobra.Command{
 					strName = names.GeneratedName(1)
 				}
 				strName = strings.ToLower(strName)
-
-				statusOk,_ := clusterOperation.Deployment("cluster",strName, strType)
+				statusOk,_ := clusterOperation.Deployment("cluster",strName, strType,arrExtras)
 				if statusOk {			
 					clusterConfig := []string{strName,strType,"","Installed"}
 					err := db.InsertCluster(clusterConfig)
@@ -71,8 +72,9 @@ func clusterCommand() *cobra.Command{
 				if res != "" {
 					strName = names.GeneratedName(1)
 				}
+				log.Printf(string(arrExtras[0]))
 				strName = strings.ToLower(strName)
-				statusOk,_ := clusterOperation.Deployment("cluster",strName, strType)
+				statusOk,_ := clusterOperation.Deployment("cluster",strName, strType, arrExtras)
 				if statusOk {			
 					clusterConfig := []string{strName,strType,"","Installed"}
 					err := db.InsertCluster(clusterConfig)
@@ -155,11 +157,13 @@ func clusterCommand() *cobra.Command{
 	deployFlags.StringVarP(&cluster.Name,"name","n","","NAME of cluster to be created/deleted")
 	deployFlags.BoolVarP(&cluster.Quiet,"quiet","q",false,"Suppress output messages. Useful when k3ai is used within scripts.")
 	deployFlags.StringVarP(&cluster.Config,"config","c","","Configure K3ai using a custom config file.[-c /path/tofile] [-c https://urlToFile]")
+	deployFlags.StringVarP(&cluster.Extras,"extras","e","","Extra arguments to pass to the cluster installation.")
 	
 	//cluster deploy flags
 	removeFlags.StringVarP(&cluster.Name,"name","n","","NAME of cluster to be created/deleted")
 	removeFlags.BoolVarP(&cluster.Quiet,"quiet","q",false,"Suppress output messages. Useful when k3ai is used within scripts.")
 	removeFlags.StringVarP(&cluster.Config,"config","c","","Configure K3ai using a custom config file.[-c /path/tofile] [-c https://urlToFile]")
+	
 	
 	//list listFlags available
 	listFlags.BoolVarP(&cluster.All,"all","a",false,"Show all possible cluster configurations available.")
