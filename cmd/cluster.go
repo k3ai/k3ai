@@ -44,7 +44,10 @@ func clusterCommand() *cobra.Command{
 			boolQuiet, _ := cmd.Flags().GetBool("quiet")
 			strName,_ := cmd.Flags().GetString("name")
 			strName = strings.ToLower(strName)
-			arrExtras,_ := cmd.Flags().GetString("extras")
+			arrExtras,err:= cmd.Flags().GetString("extras")
+			if err != nil {
+				arrExtras= " "
+			}
 			if len(args) == 0 &&  strType == "" && strConf == "" && strName == ""{
 				cmd.Help()
 				os.Exit(0)
@@ -72,7 +75,6 @@ func clusterCommand() *cobra.Command{
 				if res != "" {
 					strName = names.GeneratedName(1)
 				}
-				log.Printf(string(arrExtras[0]))
 				strName = strings.ToLower(strName)
 				statusOk,_ := clusterOperation.Deployment("cluster",strName, strType, arrExtras)
 				if statusOk {			

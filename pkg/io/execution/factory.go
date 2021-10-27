@@ -208,7 +208,7 @@ func shell(pluginEx string, pluginArgs string, outPrint bool, action string, ext
 		fmt.Println(" ")
 		if extras != ""{
 			pluginArgs = pluginArgs + " " + extras
-		}
+		} 
 		pluginEx = strings.Replace(pluginEx,"{{extras}}",pluginArgs,-1)
 		cmd := exec.Command("/bin/bash","-c",pluginEx )
 		cmd.Dir = shellPath
