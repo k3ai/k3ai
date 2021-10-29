@@ -23,14 +23,11 @@ offer a better User Experience.
 
 ---
 
----
 Thanks to the amazing and incredible project and authors that have been used to create K3ai project
 
 - [Docusaurs](https://docusaurus.io/)
 - [https://undraw.co/](https://undraw.co/)
 - [https://getemoji.com/](https://getemoji.com/)
-
----
 
 ## ⚡️ Quick start
 
@@ -113,7 +110,7 @@ So in our case will be: -->
 k3ai cluster deploy --type k3s --n mycluster
 ```
 
-## 🌝 Install a plugin to do our AI experimentations
+## 🌝 Install a plugin to do your AI experimentations
 
 Now that the server is up and running let's type:
 
@@ -124,6 +121,17 @@ k3ai plugin deploy -n mlflow -t mycluster
 K3ai will print the url where you may access to the MLFLow tracking server at the end of the installation.
 That's all now just start having fun with K3ai!
 
+## 🌈 Push a piece of code to the AI tools and focus on your goals
+
+Let's push some code to the AI tool (i.e.: MLFlow)
+
+```bash
+
+k3ai run --source https://github.com/k3ai/quickstart --target mycluster --backend mlflow
+
+```
+
+wait the run to complete and login on the MLFlow UI `http://<YOUR IP>:30500`
 
 
 ## ⭐️ Project assistance
