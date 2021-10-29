@@ -1,26 +1,141 @@
-# k3ai
+<h1 align="center">
+  <img src="https://raw.githubusercontent.com/k3ai/k3ai.github.io/main/static/img/logo-banner.jpg"/><br/>
+  Welcome to K3ai Project
+</h1>
+<p align="center"><b>K3ai</b> is a lightweight tool to get an AI Infrastructure Stack up in minutes not days.</p>
 
-K3ai aim to simplify access to AI tools and platforms. You select the tool, we take care of everything else.
+<p align="center">
+<img src="https://img.shields.io/badge/version-v1.0-blue?style=for-the-badge&logo=none" alt="cli version" /></a>&nbsp;
+<img src="https://img.shields.io/badge/Go-1.17+-00ADD8?style=for-the-badge&logo=go" alt="go version" /></a>&nbsp;
+<a href="https://goreportcard.com/report/github.com/k3ai/k3ai" target="_blank"><img src="https://img.shields.io/badge/Go_report-A+-success?style=for-the-badge&logo=none" alt="go report" /></a>&nbsp;
+<img src="https://img.shields.io/github/license/k3ai/k3ai?style=for-the-badge" alt="license" /></p>
 
-## Getting started
+---
+**NOTE on the K3ai origins**
 
-This project requires Go to be installed. On OS X with Homebrew you can just run `brew install go`.
+Original K3ai Project has been developed at the end of October 2020 in 2 weeks by:
 
-Running it then should be as simple as:
+- Alessandro Festa [https://github.com/alefesta](https://github.com/alefesta)
+- Gabriele Santomaggio [https://github.com/GSantomaggio](https://github.com/GSantomaggio)
 
-```console
-$ make
-$ ./bin/k3ai
+K3ai v1.0 has been entirely re-written by Alessandro Festa during the month of October 2021 to
+offer a better User Experience.
+
+---
+
+---
+Thanks to the amazing and incredible project and authors that have been used to create K3ai project
+
+- [Docusaurs](https://docusaurus.io/)
+- [https://undraw.co/](https://undraw.co/)
+- [https://getemoji.com/](https://getemoji.com/)
+
+---
+
+## ⚡️ Quick start
+
+Let's discover **K3ai in three simple steps**.
+
+## 🌘 Getting Started
+
+Get started by **download k3ai** from the release page [here](https://github.com/k3ai/releases).
+
+Or **try K3ai companion script** using this command:
+
+```bash
+curl -LO https://get.k3ai.in | sh -
 ```
 
-### Testing
+## 🌗 Load K3ai configuration
 
-``make test``
+Let's start loading the configuration:
 
-### Special Mentions
+```shell
+k3ai up
+```
 
-Initial project was made by @GSantomaggio and @alefesta in two weeks time. While a refactoring was possible, it was determined
-it would be easier to re-write from scratch the code.
+:::caution
 
-Special thanks to https://github.com/lacion/cookiecutter-golang for inventing the golang cookiecutter, that saved a lot of time in setting 
-up the project.
+FIrst time k3ai run will ask for a **Github PAT (Personal Access Token)** that we will use to avoid API calls limitations.  Check [`Github Documentation`](#) to learn how to create one. Your personal GH PAT only need `read repository permission`.
+
+:::
+
+## 🌖 Configure the base infrastructure
+
+Choose your favourite `Kubernetes` flavor and run it:
+
+To know which K8s flavors are available
+
+```shell
+k3ai cluster list --all
+```
+
+it should print something like:
+
+```markdown
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ INFRASTRUCTURE                                                                                          │
+├───────┬─────────────────────────────────────────────────────┬───────┬────────┬─────────┬────────────────┤
+│ TYPE  │ DESCRIPTION                                         │ KIND  │ TAG    │ VERSION │ STATUS         │
+├───────┼─────────────────────────────────────────────────────┼───────┼────────┼─────────┼────────────────┤
+│ CIVO  │ The First Cloud Native Service Provider Power...    │ infra │ cloud  │ latest  │ Available      │
+├───────┼─────────────────────────────────────────────────────┼───────┼────────┼─────────┼────────────────┤
+│ EKS-A │ Amazon Eks Anywhere Is A New Deployment Option...   │ infra │ hybrid │ v0.5.0  │ Available      │
+│       │ ate And Operate Kubernetes Clusters On Custome...   │       │        │         │                │
+├───────┼─────────────────────────────────────────────────────┼───────┼────────┼─────────┼────────────────┤
+│ K3S   │ K3s Is A Highly Available, Certified Kubernetes...  │ infra │ local  │ latest  │ Available      │
+│       │ oads In Unattended, Resource-Constrained...         │       │        │         │                │
+├───────┼─────────────────────────────────────────────────────┼───────┼────────┼─────────┼────────────────┤
+│ KIND  │ Kind Is A Tool For Running Local Kubernetes...      │ infra │ local  │ v0.11.2 │ Available      │
+│       │ as Primarily Designed For Testing Kubernetes...     │       │        │         │                │
+│       │  Or Ci.                                             │       │        │         │                │
+├───────┼─────────────────────────────────────────────────────┼───────┼────────┼─────────┼────────────────┤
+│ TANZU │ Tanzu Community Edition Is A Fully-Featured...      │ infra │ hybrid │ latest  │ In Development │
+│       │ ers And Users. It Is A Freely Available...          │       │        │         │                │
+│       │  Of Vmware Tanzu.                                   │       │        │         │                │
+└───────┴─────────────────────────────────────────────────────┴───────┴────────┴─────────┴────────────────┘
+```
+
+Now let start with something super fast and super simple:
+
+<!-- ```bash
+k3ai [COMMAND] [ACTION] [CHOICE] [SUB-CHOICE]
+```
+where:
+
+- **K3AI [COMMAND]** : I want to do something with a `cluster` or a `plugin`
+- **[ACTION]** : I want to deploy a `cluster` or a `plugin`
+- **[CHOICE]** I want a specific type of a `cluster`. This could be shortened into `-t`
+- **[SUB- CHOICE]** I want to identify later the `cluster` with this name. This could be shortened into `-n`
+So in our case will be: -->
+
+```bash
+k3ai cluster deploy --type k3s --n mycluster
+```
+
+## 🌝 Install a plugin to do our AI experimentations
+
+Now that the server is up and running let's type:
+
+```bash
+k3ai plugin deploy -n mlflow -t mycluster
+```
+
+K3ai will print the url where you may access to the MLFLow tracking server at the end of the installation.
+That's all now just start having fun with K3ai!
+
+
+
+## ⭐️ Project assistance
+
+If you want to say **thank you** or/and support active development of `K3ai Project`:
+
+- Add a [GitHub Star](https://github.com/k3ai/k3ai) to the project.
+- Tweet about project [on your Twitter](https://twitter.com/intent/tweet?text=%E2%9C%A8%20An%20AI%20stack%20including%20%23kubernetes%20and%20popular%20tools%20like%20%23kubeflow%20%23mlflow%20%23airflow.%20%20Deploy%20your%20AI%20projects%20in%20seconds%20in%20one%20command.%20Focus%20on%20writing%20code%20and%20thinking%20of%20business%20logic.K3ai%20will%20take%20care%20of%20the%20rest.%0A%0Ahttps%3A%2F%2Fgithub.com%2Fk3ai%2Fk3ai).
+- Write interesting articles about K3ai project on [Dev.to](https://dev.to/), [Medium](https://medium.com/) or personal blog.
+
+Together, we can make this project **better** every day! 😘
+
+## ⚠️ License
+
+`K3ai` is free and open-source software licensed under the [BSD 3-Clause](https://github.com/k3ai/k3ai/blob/master/LICENSE). Official [logo](https://raw.githubusercontent.com/k3ai/k3ai.github.io/main/static/img/logo.jpg) was created by [Alessandro Festa](https://github.com/alefesta/).
