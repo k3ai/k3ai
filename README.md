@@ -28,28 +28,6 @@ Thanks to the amazing and incredible people and projects that have been instrume
 - [https://undraw.co/](https://undraw.co/)
 - [https://getemoji.com/](https://getemoji.com/)
 
-## Current Implementation support
-
-| Operating System | K3ai v1.0.0 |
-|:---|:---:|
-|    Linux     |    Yes          |
-|    Windows   |    In Progress  |
-|    MacOs     |    In Progress  |
-|    Arm       |    In Progress  |
-
-| K8s Clusters | K3ai v1.0.0 |
-|:---|:---:|
-| Rancher K3s|Yes|
-|Vmware Tanzu Community Ed.|Yes|
-|Amazon EKS Anywhere|Yes|
-|KinD|Yes|
-
-| Operating System | K3ai v1.0.0 |
-|:---|:---:|
-|Kuebflow Components| Yes|
-| MLFlow| Yes|
-|Apache Airflow |Yes|
-|Argo Workflows| Yes|
 
 ## ⚡️ Quick start
 
@@ -154,6 +132,35 @@ k3ai run --source https://github.com/k3ai/quickstart --target mycluster --backen
 ```
 
 wait the run to complete and login the backend AI tolls (i.e.: on the MLFlow UI `http://<YOUR IP>:30500`)
+
+## Current Implementation support
+
+### Operating Systems
+
+| Operating System | K3ai v1.0.0 |
+|:---|:---:|
+|    Linux     |    Yes          |
+|    Windows   |    In Progress  |
+|    MacOs     |    In Progress  |
+|    Arm       |    In Progress  |
+
+### Clusters
+
+| K8s Clusters | K3ai v1.0.0 |
+|:---|:---:|
+| Rancher K3s|Yes|
+|Vmware Tanzu Community Ed.|Yes|
+|Amazon EKS Anywhere|Yes|
+|KinD|Yes|
+
+### Plugins
+
+| Plugins | K3ai v1.0.0 |
+|:---|:---:|
+|Kuebflow Components| Yes|
+| MLFlow| Yes|
+|Apache Airflow |Yes|
+|Argo Workflows| Yes|
 
 
 ## ⭐️ Project assistance
