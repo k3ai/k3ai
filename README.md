@@ -6,7 +6,7 @@
 
 <p align="center">
 <img src="https://img.shields.io/badge/version-v1.0-blue?style=for-the-badge&logo=none" alt="cli version" /></a>&nbsp;
-<img src="https://img.shields.io/badge/Go-1.17+-00ADD8?style=for-the-badge&logo=go" alt="go version" /></a>&nbsp;
+<img src="https://img.shields.io/badge/Go-1.14+-00ADD8?style=for-the-badge&logo=go" alt="go version" /></a>&nbsp;
 <a href="https://goreportcard.com/report/github.com/k3ai/k3ai" target="_blank"><img src="https://img.shields.io/badge/Go_report-A+-success?style=for-the-badge&logo=none" alt="go report" /></a>&nbsp;
 <img src="https://img.shields.io/github/license/k3ai/k3ai?style=for-the-badge" alt="license" /></p>
 
@@ -15,19 +15,41 @@
 
 Original K3ai Project has been developed at the end of October 2020 in 2 weeks by:
 
-- Alessandro Festa [https://github.com/alefesta](https://github.com/alefesta)
-- Gabriele Santomaggio [https://github.com/GSantomaggio](https://github.com/GSantomaggio)
+- **Alessandro Festa** [https://github.com/alefesta](https://github.com/alefesta)
+- **Gabriele Santomaggio** [https://github.com/GSantomaggio](https://github.com/GSantomaggio)
 
-K3ai v1.0 has been entirely re-written by Alessandro Festa during the month of October 2021 to
+K3ai v1.0 has been entirely re-written by **Alessandro Festa** during the month of October 2021 to
 offer a better User Experience.
-
 ---
 
-Thanks to the amazing and incredible project and authors that have been used to create K3ai project
+Thanks to the amazing and incredible people and projects that have been instrumental to create K3ai project repositories,website,etc...
 
 - [Docusaurs](https://docusaurus.io/)
 - [https://undraw.co/](https://undraw.co/)
 - [https://getemoji.com/](https://getemoji.com/)
+
+## Current Implementation support
+
+| Operating System | K3ai v1.0.0 |
+|:---|:---:|
+|    Linux     |    Yes          |
+|    Windows   |    In Progress  |
+|    MacOs     |    In Progress  |
+|    Arm       |    In Progress  |
+
+| K8s Clusters | K3ai v1.0.0 |
+|:---|:---:|
+| Rancher K3s|Yes|
+|Vmware Tanzu Community Ed.|Yes|
+|Amazon EKS Anywhere|Yes|
+|KinD|Yes|
+
+| Operating System | K3ai v1.0.0 |
+|:---|:---:|
+|Kuebflow Components| Yes|
+| MLFlow| Yes|
+|Apache Airflow |Yes|
+|Argo Workflows| Yes|
 
 ## ⚡️ Quick start
 
@@ -51,11 +73,11 @@ Let's start loading the configuration:
 k3ai up
 ```
 
-:::caution
+---
 
-FIrst time k3ai run will ask for a **Github PAT (Personal Access Token)** that we will use to avoid API calls limitations.  Check [`Github Documentation`](#) to learn how to create one. Your personal GH PAT only need `read repository permission`.
+First time k3ai run will ask for a **Github PAT (Personal Access Token)** that we will use to avoid API calls limitations.  Check [`Github Documentation`](#) to learn how to create one. Your personal GH PAT only need `read repository permission`.
 
-:::
+---
 
 ## 🌖 Configure the base infrastructure
 
@@ -131,7 +153,7 @@ k3ai run --source https://github.com/k3ai/quickstart --target mycluster --backen
 
 ```
 
-wait the run to complete and login on the MLFlow UI `http://<YOUR IP>:30500`
+wait the run to complete and login the backend AI tolls (i.e.: on the MLFlow UI `http://<YOUR IP>:30500`)
 
 
 ## ⭐️ Project assistance
