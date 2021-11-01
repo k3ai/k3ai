@@ -36,7 +36,7 @@ func runCommand() *cobra.Command{
 			time.Sleep(700 * time.Millisecond)
 			err := runner.Loader(sSource,sTarget,sBackend,sExtras)
 			if err != nil {
-				log.Println("An error occoured, please retry and if persist, please open an issue on our GitHub repository.")
+				log.Println("An error occurred, please retry and if persist, please open an issue on our GitHub repository.")
 			}
 			if !bQuiet {
 				msg := "Completing execution..."
