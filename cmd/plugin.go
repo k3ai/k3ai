@@ -1,20 +1,19 @@
 package cmd
 
 import (
-	"os"
 	"fmt"
 	"log"
+	"os"
 	"strings"
-  	"github.com/spf13/cobra"
 
-	color "github.com/k3ai/pkg/color"
+	"github.com/spf13/cobra"
+
 	"github.com/k3ai/internal"
+	color "github.com/k3ai/pkg/color"
 	db "github.com/k3ai/pkg/db"
-	tables "github.com/k3ai/pkg/tables"
+	"github.com/k3ai/pkg/http"
 	pluginOperations "github.com/k3ai/pkg/io/execution"
-
-
-  
+	tables "github.com/k3ai/pkg/tables"
 )
 
 func pluginCommand() *cobra.Command{
@@ -56,6 +55,7 @@ func pluginCommand() *cobra.Command{
 					if err != nil {
 						log.Fatal(err)
 					}
+					
 					color.Done()
 					fmt.Println(" ✔️ Installation Done.")
 					// pluginOperations.Client(strName,strTarget)
@@ -68,6 +68,20 @@ func pluginCommand() *cobra.Command{
 					out := pluginOperations.Client(strTarget,clusterType)
 					os.Remove(out)
 					fmt.Println(" ")
+					strIP := http.GetIP()
+					switch strName {
+					case "mlflow":
+						fmt.Println("We tried to publish MLFLow at:http://" + strIP + ":30500"  )
+					case "kf-pa":
+						fmt.Println("We tried to publish Kubeflow Pipelines at:http://" + strIP + ":30900"  )
+					case "kf-katib":
+						fmt.Println("We tried to publish Kubeflow Katib at:http://" + strIP + ":30600"  )
+					case "airflow":
+						fmt.Println("We tried to publish Apache Airflow at:http://" + strIP + ":30800"  )
+					case "argo-workflow":
+						fmt.Println("We tried to publish Argo Workflows at:http://" + strIP + ":32746"  )
+					}
+
 					color.Done()
 					fmt.Println(" ✔️ Installation Done.")
 				}

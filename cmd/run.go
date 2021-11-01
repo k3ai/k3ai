@@ -48,7 +48,7 @@ func runCommand() *cobra.Command{
 			time.Sleep(500 * time.Millisecond)
 			if !bQuiet{
 				color.Done()
-				fmt.Println("✔️	Done.You may check your code directly on the backend platform.")
+				fmt.Println("✔️	Done. You may check your code directly on the backend platform.")
 			}
 		},
 	  }

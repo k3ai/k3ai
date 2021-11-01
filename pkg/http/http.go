@@ -6,13 +6,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+    "net"
 
-    "gopkg.in/yaml.v2"
 	"github.com/k3ai/pkg/auth"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
 
-    internal "github.com/k3ai/internal"
-    db "github.com/k3ai/pkg/db"
+	internal "github.com/k3ai/internal"
+	db "github.com/k3ai/pkg/db"
 )
 var (
     repoPaths = []string{"apps","infra","bundles"}
@@ -101,4 +102,23 @@ func RetrievePlugins(token string, action string, ch chan bool) {
         }
     }
     ch <- true
+}
+
+
+func GetIP() string {
+    var ipnet *net.IPNet
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		os.Stderr.WriteString("Oops: " + err.Error() + "\n")
+		os.Exit(1)
+	}
+
+	for _, a := range addrs {
+		if ipnet, ok := a.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				return ipnet.IP.String()
+			}
+		}
+	}
+    return ipnet.IP.String()
 }
