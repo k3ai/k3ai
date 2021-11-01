@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k3ai-executor
+  labels:
+    app: k3ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k3ai
+  template:
+    metadata:
+      labels:
+        app: k3ai
+    spec:
+      containers:
+      - name: k3ai
+        image: ghcr.io/k3ai/k3ai-executor:latest
+        command: ["/bin/sleep", "3650d"]

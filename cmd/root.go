@@ -1,43 +1,54 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
+	// "os"
+	// "fmt"
 
 	"github.com/spf13/cobra"
+
 )
 
-var cfgFile string
+const cliName = "k3ai"
+var version bool
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "generated code example",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+var (
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//      Run: func(cmd *cobra.Command, args []string) { },
-}
+	rootCmd = &cobra.Command{
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	Use:   cliName + "[options]",
+	Short: "K3ai is a very fast tool to run AI Infrastructure stacks",
+	// By default (no Run/RunE in parent command) for typos in subcommands, cobra displays the help of parent command but exit(0) !
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return cmd.Help()
+		}
+		if version {
+			return versionCommand().Execute()
+		}
+		_ = cmd.Help()
+		return nil
+	},
+
 	}
-}
+)
+
+func Execute() error {
+	return rootCmd.Execute()
+	}
 
 func init() {
 	cobra.OnInitialize()
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
+	rootCmd.Flags().SortFlags = false
+	rootCmd.DisableFlagsInUseLine = true
+	rootCmd.PersistentFlags().BoolP("help", "h", false , "Help usage")
+	rootCmd.PersistentFlags().Lookup("help").Hidden = true
+	rootCmd.AddCommand(
+		upCommand(),
+		downCommand(),
+		clusterCommand(),
+		pluginCommand(),
+		runCommand(),
+		versionCommand(),
+	)
 }

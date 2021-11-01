@@ -1,3 +1,6 @@
 bin
 vendor
 .vscode
+.env
+images
+Dockerfiles

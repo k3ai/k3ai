@@ -10,8 +10,12 @@ GIT_COMMIT=$(shell git rev-parse HEAD)
 GIT_DIRTY=$(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)
 BUILD_DATE=$(shell date '+%Y-%m-%d-%H:%M:%S')
 IMAGE_NAME := "alefesta/k3ai"
+GOOS:=$(shell go env GOOS)
+GOARCH:=$(shell go env GOARCH)
 
-default: test
+LDFLAGS:= -w -s
+
+default: build
 
 help:
 	@echo 'Management commands for k3ai:'
@@ -26,7 +30,7 @@ help:
 build:
 	@echo "building ${BIN_NAME} ${VERSION}"
 	@echo "GOPATH=${GOPATH}"
-	go build -ldflags "-X github.com/alefesta/k3ai/version.GitCommit=${GIT_COMMIT}${GIT_DIRTY} -X github.com/alefesta/k3ai/version.BuildDate=${BUILD_DATE}" -o bin/${BIN_NAME}
+	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -ldflags "-w -s -X github.com/k3ai/version.GitCommit=${GIT_COMMIT}${GIT_DIRTY} -X github.com/k3ai/version.BuildDate=${BUILD_DATE}" -o bin/${BIN_NAME}
 
 get-deps:
 	dep ensure
