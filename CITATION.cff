@@ -1,0 +1,12 @@
+authors: 
+  -
+    affiliation: "K3ai Project"
+    family-names: Festa
+    given-names: Alessandro
+cff-version: "1.0.0"
+date-released: 2021-10-31
+license: "BSD-3-Clause License"
+message: "If you use this code in your software, please cite it using these metadata."
+repository-code: "https://github.com/k3ai/k3ai"
+title: "K3ai Project"
+version: "v1.0"
