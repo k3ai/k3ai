@@ -32,7 +32,7 @@ func runCommand() *cobra.Command{
 			}
 			
 			color.InProgress()
-			fmt.Println("🧪	Executing code...")
+			fmt.Println("🧪	Initializing code...")
 			time.Sleep(700 * time.Millisecond)
 			err := runner.Loader(sSource,sTarget,sBackend,sExtras)
 			if err != nil {

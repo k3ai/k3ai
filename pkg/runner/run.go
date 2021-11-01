@@ -44,14 +44,11 @@ func Loader(source string,target string,backend string, extras string) error {
  execTemplate = execTemplate + `
 EOF
 `
-log.Printf(execTemplate)
 
   name,ctype:= db.ListClusterByName(target)
   out := factory.Client(name,ctype)
 	home,_ := os.UserHomeDir()
 	shellPath := home + "/.k3ai"
-  color.InProgress()
-  fmt.Println(" 🚀 Working on the installation...")	
   outcome,err := exec.Command("/bin/bash","-c", "cat <<EOF | " + shellPath + k3aiKube + " apply  --kubeconfig="+ out +" -f - " + template ).Output()
   if err != nil {
     log.Println(err)
@@ -63,7 +60,6 @@ log.Printf(execTemplate)
 
   if backend == "mlflow" {
     cmd:= exec.Command("/bin/bash","-c",  "cat <<EOF | " + shellPath + k3aiKube + "  --kubeconfig="+ out + " exec  deployment/k3ai-executor -- bash -c " + execTemplate )
-    log.Println(cmd)
     cmd.Dir = shellPath
 		r, _ := cmd.StdoutPipe()
 		cmd.Stderr = cmd.Stdout
@@ -74,7 +70,7 @@ log.Printf(execTemplate)
     // loader.Working(msg)
     go func() {
 			// Read line by line and process it
-      msg := "⏳	Working, please wait..."
+      msg := "🧪	Working, please wait..."
       fmt.Printf("\r %v", msg)
 			fmt.Println(" ")
 			for scanner.Scan() {
@@ -94,9 +90,9 @@ log.Printf(execTemplate)
 			log.Fatal(err)
 		}
   }
-  _,_ = exec.Command("/bin/bash","-c", "cat <<EOF | " + shellPath + k3aiKube + " delete  --kubeconfig="+ out +" -f - " + template ).Output()
-  if err != nil {
-    log.Println(err)
-  }
+  // _,_ = exec.Command("/bin/bash","-c", "cat <<EOF | " + shellPath + k3aiKube + " delete  --kubeconfig="+ out +" -f - " + template ).Output()
+  // if err != nil {
+  //   log.Println(err)
+  // }
   return nil
 }

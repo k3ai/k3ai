@@ -27,10 +27,6 @@ func pluginCommand() *cobra.Command{
 				cmd.Help()
 				os.Exit(0)
 			}
-		  color.Alert()
-		  fmt.Println("This is and error")
-		  color.Disable()
-		  fmt.Println("This is not")
 		},
 	  }
 	deployCmd := &cobra.Command{
