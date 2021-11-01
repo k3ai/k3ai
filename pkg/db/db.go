@@ -252,6 +252,20 @@ func ListClustersByName() (clusterResults[]string) {
 	return clusterResults
 }
 
+func ListClusterByName(target string) (name string,ctype string) {
+
+	db := DbLogin()
+	row, err := db.Query("SELECT name,ctype from CLUSTERS WHERE name=?;",target)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer row.Close()
+	row.Next()
+	row.Scan(&name,&ctype)
+		
+	return name,ctype
+}
+
 func CheckClusterName(name string) (resname string, ctype string) {
 	db := DbLogin()
 	row, _ := db.Query("SELECT name,ctype from CLUSTERS where name=?;",name)

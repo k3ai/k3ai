@@ -366,6 +366,7 @@ func kubectl(pluginEx string, pluginArgs string, pluginName string, action strin
 		fmt.Println(" 🚀 Working on the installation...")	
 		outcome,_ := exec.Command("/bin/bash","-c", shellPath + k3aiKube + " "+ pluginEx +" --kubeconfig="+ out).Output()
 		fmt.Println(string(outcome))
+		_,_ = exec.Command("/bin/bash","-c", shellPath + k3aiKube + " wait --for=condition=Ready pods --all --all-namespaces  --kubeconfig="+ out).Output()
 	}
 	return nil
 }
@@ -423,7 +424,7 @@ func WaitForDeployment(clientset *kubernetes.Clientset) {
 		
 }
 
-func Client (name string,ctype string) (kubeconfig string) { 
+func Client(name string,ctype string) (kubeconfig string) { 
 	var cPath string
 	if ctype == "k3s" {
 		cPath ="/etc/rancher/k3s/k3s.yaml"
