@@ -53,9 +53,8 @@ EOF
   if err != nil {
     log.Println(err)
   }
-  _,_ = exec.Command("/bin/bash","-c", shellPath + k3aiKube + " wait --for=condition=Ready pods --all --all-namespaces  --kubeconfig="+ out).Output()
+  exec.Command("/bin/bash","-c", shellPath + k3aiKube + " wait --for=condition=Ready pods --all --all-namespaces  --kubeconfig="+ out).Output()
   fmt.Println(string(outcome))
-
 
 
   if backend == "mlflow" {
