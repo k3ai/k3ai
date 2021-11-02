@@ -25,7 +25,7 @@ offer a better User Experience.
 Thanks to the amazing and incredible people and projects that have been instrumental to create K3ai project repositories,website,etc...
 
 - [Docusaurs](https://docusaurus.io/) - How simple and amazing is to use for your own website (https://k3ai.in)
-- [https://undraw.co/](https://undraw.co/) - The amazing work create by Katerina Limpitsouni (https://twitter.com/ninaLimpi) is a real piece of art
+- [https://undraw.co/](https://undraw.co/) - The amazing work created by Katerina Limpitsouni (https://twitter.com/ninaLimpi) is a real piece of art
 - [https://getemoji.com/](https://getemoji.com/) - We all need some emoji in our life isn't it?
 - [https://clig.dev/](https://clig.dev/) -- K3ai is completly inspired by the Command Line Guidelines manifesto.
 
