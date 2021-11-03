@@ -1,16 +1,17 @@
 package runner
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
-  "bufio"
+	"time"
 
 	color "github.com/k3ai/pkg/color"
 	db "github.com/k3ai/pkg/db"
 	factory "github.com/k3ai/pkg/io/execution"
-  // loader "github.com/k3ai/pkg/loader"
+	// loader "github.com/k3ai/pkg/loader"
 )
 
 var template =`
@@ -56,7 +57,8 @@ EOF
   exec.Command("/bin/bash","-c", shellPath + k3aiKube + " wait --for=condition=Ready pods --all --all-namespaces  --kubeconfig="+ out).Output()
   fmt.Println(string(outcome))
 
-
+  time.Sleep(10 * time.Second)
+  exec.Command("/bin/bash","-c", shellPath + k3aiKube + " wait --for=condition=Ready pods --all --all-namespaces  --kubeconfig="+ out).Output()
   if backend == "mlflow" {
     cmd:= exec.Command("/bin/bash","-c",  "cat <<EOF | " + shellPath + k3aiKube + "  --kubeconfig="+ out + " exec  deployment/k3ai-executor -- bash -c " + execTemplate )
     cmd.Dir = shellPath
