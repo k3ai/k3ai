@@ -60,6 +60,12 @@ func Deployment (actionType string,name string, ctype string, extras string) (st
 			url := db.List(ctype)
 			data,_ := http.Download(url)
 			_ = yaml.Unmarshal([]byte(data), &rootPlugin)
+			if strings.ToLower(rootPlugin.Metadata.PluginStatus) != "available" {
+				color.Alert()
+				fmt.Println("🥺 We are sorry, currently the plugin is unavailable")
+				os.Exit(1)
+			}
+
 			if len(rootPlugin.Resources) > 1 {
 				for i:=0; i < len(rootPlugin.Resources);i++{
 					_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[i]),url,"install",name, extras)
@@ -71,6 +77,11 @@ func Deployment (actionType string,name string, ctype string, extras string) (st
 			url := db.List(name)
 			data,_ := http.Download(url)
 			_ = yaml.Unmarshal([]byte(data), &rootPlugin)
+			if strings.ToLower(rootPlugin.Metadata.PluginStatus) != "available" {
+				color.Alert()
+				fmt.Println("🥺 We are sorry, currently the plugin is unavailable")
+				os.Exit(1)
+			}
 			if len(rootPlugin.Resources) > 1 {
 				for i:=0; i < len(rootPlugin.Resources);i++{
 					_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[i]),url,"install",ctype, extras)
