@@ -65,6 +65,7 @@ func Deployment (actionType string,name string, ctype string, extras string) (st
 				fmt.Println("🥺 We are sorry, currently the plugin is unavailable")
 				os.Exit(1)
 			}
+
 			if len(rootPlugin.Resources) > 1 {
 				for i:=0; i < len(rootPlugin.Resources);i++{
 					_ = innerPluginResource(rootPlugin.Metadata.Name,string(rootPlugin.Resources[i]),url,"install",name, extras)
