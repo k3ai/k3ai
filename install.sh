@@ -9,4 +9,7 @@ chmod +x k3ai
 
 sudo mv k3ai /usr/local/bin
 
+
 echo "Done. Check our Docs at https://k3ai.in to start."
+
+
