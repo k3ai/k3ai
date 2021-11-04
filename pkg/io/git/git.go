@@ -1,6 +1,7 @@
 package git
 
 import (
+	"os"
 	"fmt"
 	"strings"
 
@@ -9,9 +10,10 @@ import (
 
 
 func Clone(cloneUrl string, name string) error {
+	homePath,_ := os.UserHomeDir()
 	repository := cloneUrl
 	name = strings.ToLower(name)
-	_, err := git.PlainClone("/home/alefesta/.k3ai/git/",false,&git.CloneOptions{
+	_, err := git.PlainClone(homePath+"/.k3ai/git/",false,&git.CloneOptions{
 		URL: repository,
 	})
 	if err != nil && err.Error() != "repository already exists" {

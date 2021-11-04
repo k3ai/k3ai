@@ -127,7 +127,6 @@ func innerPluginResource (name string,base string,url string, action string,clus
 	if strings.Contains(base,"../../") {
 		name = strings.ToLower(name)
 		base = strings.TrimLeft(base,"../..") + "/k3ai.yaml"
-		// path := "/home/alefesta/.k3ai/"+name+"/"+strings.TrimRight(base,"/k3ai.yaml")
 		url = strings.Replace(url,"/apps/" + name +"/k3ai.yaml","/"+base,-1)
 		data,_ := http.Download(url)
 		_ = yaml.Unmarshal([]byte(data), &subPlugin)
