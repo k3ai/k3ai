@@ -1,9 +1,14 @@
 package main
 
 import (
-  "github.com/k3ai/cmd"
+	"log"
+
+	"github.com/k3ai/cmd"
 )
 
 func main() {
-  cmd.Execute()
+	err := cmd.Execute()
+	if err != nil {
+		log.Fatal(err)
+	}
 }

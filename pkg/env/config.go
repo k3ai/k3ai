@@ -25,15 +25,14 @@ import (
 )
 
 const (
-	configPath = "/.config/k3ai/"
-	k3aiPath = "/.k3ai"
-	configUrl = "https://raw.githubusercontent.com/k3ai/plugins/main/config.json"
-	kubectlUrl = "https://dl.k8s.io/release/v1.22.2/bin/linux/amd64/kubectl"
-	kubectlSha256 = "https://dl.k8s.io/v1.22.2/bin/linux/amd64/kubectl.sha256"
-	helmUrl = "https://get.helm.sh/helm-v3.7.0-linux-amd64.tar.gz"
-	nerdctl = ""
-	civoUrl = "https://github.com/civo/cli/releases/download/v0.7.6/civo-0.7.6-linux-amd64.tar.gz"
-
+	configPath    = "/.config/k3ai/"
+	k3aiPath      = "/.k3ai"
+	configUrl     = "https://raw.githubusercontent.com/k3ai/plugins/main/config.json"
+	kubectlUrl    = "https://dl.k8s.io/release/v1.22.2/bin/linux/amd64/kubectl"
+	kubectlSha256 = "https://dl.k8s.io/v1.22.2/bin/linux/amd64/kubectl.sha256" //nolint
+	helmUrl       = "https://get.helm.sh/helm-v3.7.0-linux-amd64.tar.gz"
+	nerdctl       = "" //nolint
+	civoUrl       = "https://github.com/civo/cli/releases/download/v0.7.6/civo-0.7.6-linux-amd64.tar.gz"
 )
 
 /*
@@ -41,29 +40,29 @@ Check if a previous environment exist in both $HOME/.config/k3ai and $HOME/.k3ai
 		a. If folders do not exist we have to create them
 		b. If folder exist we try to read them, if error we will exit and inform the user
 */
-func InitConfig(ch chan bool,msg string,sConfig string) {
-	var homeDir,_ = os.UserHomeDir()
-	if _, err := os.Stat(homeDir + configPath); !os.IsNotExist(err) { 
+func InitConfig(ch chan bool, msg string, sConfig string) {
+	var homeDir, _ = os.UserHomeDir()
+	if _, err := os.Stat(homeDir + configPath); !os.IsNotExist(err) {
 		// if bForce {
 		// 	os.RemoveAll(homeDir + configPath)
 		// 	err := os.Mkdir(homeDir + configPath, 0755)
 		// 	if err != nil {
 		// 		log.Fatal(err)
 		// 	}
-		// 	Config()	
+		// 	Config()
 		// }
 		Config()
-	  } else if os.IsNotExist(err) {
-		err := os.Mkdir(homeDir + configPath, 0755)
-			if err != nil {
-				log.Fatal(err)
-			}
-			Config()	
-	  } else {
+	} else if os.IsNotExist(err) {
+		err := os.Mkdir(homeDir+configPath, 0755)
+		if err != nil {
+			log.Fatal(err)
+		}
+		Config()
+	} else {
 		log.Fatal(err)
-	  
-	  }
-	  if _, err := os.Stat(homeDir + k3aiPath); !os.IsNotExist(err) {
+
+	}
+	if _, err := os.Stat(homeDir + k3aiPath); !os.IsNotExist(err) {
 		// if bForce {
 		// 	os.RemoveAll(homeDir + k3aiPath)
 		// 	err := os.Mkdir(homeDir + k3aiPath , 0755)
@@ -74,25 +73,25 @@ func InitConfig(ch chan bool,msg string,sConfig string) {
 		kubectlConfig()
 		civoConfig()
 		helmConfig(ch)
-	  
-	  } else if os.IsNotExist(err) {
-		err := os.Mkdir(homeDir + k3aiPath , 0755)
-			if err != nil {
-				log.Fatal(err)
-			}
+
+	} else if os.IsNotExist(err) {
+		err := os.Mkdir(homeDir+k3aiPath, 0755)
+		if err != nil {
+			log.Fatal(err)
+		}
 		kubectlConfig()
 		civoConfig()
-		helmConfig(ch)  
-	  } else {
+		helmConfig(ch)
+	} else {
 		// Schrodinger: file may or may not exist. See err for details.
 		log.Fatal(err)
-	  
-	  }
-	  ch <- true
+
+	}
+	ch <- true
 }
 
-func Config ()  {
-	var homeDir,_ = os.UserHomeDir()
+func Config() {
+	var homeDir, _ = os.UserHomeDir()
 	viper.SetConfigName("config")
 	viper.SetConfigType("json")
 	viper.AddConfigPath(homeDir + "/.config/k3ai/")
@@ -100,11 +99,11 @@ func Config ()  {
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// err = viper.SafeWriteConfigAs(homeDir + "/.config/k3ai/config.yml")
-			configData,err := http.Download(configUrl)
+			configData, err := http.Download(configUrl)
 			if err != nil {
 				log.Fatal(err)
 			}
-			err = os.WriteFile(homeDir + configPath +"/config.json",configData,0775)
+			err = os.WriteFile(homeDir+configPath+"/config.json", configData, 0775)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -115,74 +114,75 @@ func Config ()  {
 	}
 }
 
-func kubectlConfig () {
-	homedir,_ := os.UserHomeDir()
+func kubectlConfig() {
+	homedir, _ := os.UserHomeDir()
 	k3aiDir := homedir + "/.k3ai/.tools/"
 
-	_,err := exec.Command("wget",kubectlUrl,"-P",k3aiDir).Output()
+	_, err := exec.Command("wget", kubectlUrl, "-P", k3aiDir).Output()
 	if err != nil {
 		log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")
-		os.Exit(0)	
+		os.Exit(0)
 	}
-	exec.Command("chmod","+x",k3aiDir + "/kubectl").Output()
-
+	_, err = exec.Command("chmod", "+x", k3aiDir+"/kubectl").Output()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
-func helmConfig (ch chan bool) {
-	homedir,_ := os.UserHomeDir()
+func helmConfig(ch chan bool) {
+	homedir, _ := os.UserHomeDir()
 	k3aiDir := homedir + "/.k3ai/.tools/"
 
-	_,err := exec.Command("wget",helmUrl,"-P",k3aiDir).Output()
+	_, err := exec.Command("wget", helmUrl, "-P", k3aiDir).Output()
 	if err != nil {
 		log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")
-		os.Exit(0)	
+		os.Exit(0)
 	}
-	_,err = exec.Command("tar","-xvzf",k3aiDir + "/helm-v3.7.0-linux-amd64.tar.gz","-C",k3aiDir).Output()
+	_, err = exec.Command("tar", "-xvzf", k3aiDir+"/helm-v3.7.0-linux-amd64.tar.gz", "-C", k3aiDir).Output()
 	if err != nil {
 		log.Fatal(err)
 	}
-	_,err = exec.Command("/bin/bash","-c","mv " + k3aiDir + "/linux-amd64/helm " + k3aiDir).Output()
+	_, err = exec.Command("/bin/bash", "-c", "mv "+k3aiDir+"/linux-amd64/helm "+k3aiDir).Output()
 	if err != nil {
 		log.Fatal(err)
 	}
-	_,err = exec.Command("/bin/bash","-c","rm " + k3aiDir + "/helm-v3.7.0-linux-amd64.tar.gz").Output()
+	_, err = exec.Command("/bin/bash", "-c", "rm "+k3aiDir+"/helm-v3.7.0-linux-amd64.tar.gz").Output()
 	if err != nil {
 		log.Fatal(err)
 	}
-	_,err = exec.Command("/bin/bash","-c","rm -r " + k3aiDir + "/linux-amd64").Output()
+	_, err = exec.Command("/bin/bash", "-c", "rm -r "+k3aiDir+"/linux-amd64").Output()
 	if err != nil {
 		log.Fatal(err)
 	}
 	ch <- true
 }
 
-
-func civoConfig () {
-	homedir,_ := os.UserHomeDir()
+func civoConfig() {
+	homedir, _ := os.UserHomeDir()
 	k3aiDir := homedir + "/.k3ai/.tools/"
 
-	_,err := exec.Command("wget",civoUrl,"-P",k3aiDir).Output()
+	_, err := exec.Command("wget", civoUrl, "-P", k3aiDir).Output()
 	if err != nil {
 		log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")
-		os.Exit(0)	
+		os.Exit(0)
 	}
-	_,err = exec.Command("/bin/bash", "-c","mkdir " + k3aiDir + "/civodir").Output()
+	_, err = exec.Command("/bin/bash", "-c", "mkdir "+k3aiDir+"/civodir").Output()
 	if err != nil {
 		log.Fatal(err)
 	}
-	_,err = exec.Command("tar", "-xvzf",k3aiDir + "/civo-0.7.6-linux-amd64.tar.gz", "-C",k3aiDir + "/civodir").Output()
+	_, err = exec.Command("tar", "-xvzf", k3aiDir+"/civo-0.7.6-linux-amd64.tar.gz", "-C", k3aiDir+"/civodir").Output()
 	if err != nil {
 		log.Fatal(err)
 	}
-	_,err = exec.Command("/bin/bash","-c","mv " + k3aiDir + "civodir/civo " + k3aiDir).Output()
+	_, err = exec.Command("/bin/bash", "-c", "mv "+k3aiDir+"civodir/civo "+k3aiDir).Output()
 	if err != nil {
 		log.Fatal(err)
 	}
-	_,err = exec.Command("/bin/bash","-c","rm " + "-r " + k3aiDir + "/civodir").Output()
+	_, err = exec.Command("/bin/bash", "-c", "rm "+"-r "+k3aiDir+"/civodir").Output()
 	if err != nil {
 		log.Fatal(err)
 	}
-	_,err = exec.Command("/bin/bash","-c","rm " + "-r " + k3aiDir + "/civo-0.7.6-linux-amd64.tar.gz").Output()
+	_, err = exec.Command("/bin/bash", "-c", "rm "+"-r "+k3aiDir+"/civo-0.7.6-linux-amd64.tar.gz").Output()
 	if err != nil {
 		log.Fatal(err)
 	}
