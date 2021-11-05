@@ -1,7 +1,7 @@
 package color
 
 import (
- 	"github.com/fatih/color"
+	"github.com/fatih/color"
 )
 
 func Alert() {
@@ -23,4 +23,3 @@ func InProgress() {
 func White() {
 	color.Set(color.FgHiWhite)
 }
-

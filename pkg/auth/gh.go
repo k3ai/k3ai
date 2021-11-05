@@ -7,7 +7,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func GitHub(token string) (client *github.Client, err error,ctx context.Context) {
+func GitHub(token string) (client *github.Client, err error, ctx context.Context) {
 	ctx = context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{
@@ -22,7 +22,7 @@ func GitHub(token string) (client *github.Client, err error,ctx context.Context)
 	//test to check if token is valid
 	_, _, err = client.Repositories.List(ctx, "", nil)
 	if err != nil {
-		return nil,err,nil
+		return nil, err, nil
 	}
-	return client,nil,ctx
+	return client, nil, ctx
 }
