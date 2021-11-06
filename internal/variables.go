@@ -7,6 +7,7 @@ var (
 
 type Options struct {
 	Quiet    bool
+	PAT      string
 	Config   string
 	All      bool
 	Force    bool

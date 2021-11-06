@@ -28,11 +28,12 @@ func upCommand() *cobra.Command {
 	homeDir, _ := os.UserHomeDir()
 	up := internal.Options{}
 	upCmd := &cobra.Command{
-		Use:   "up [-h --help] [-q --quiet] [-c fileOrUrl]",
+		Use:   "up [-h --help] [-q --quiet] [-c fileOrUrl] [-p --pat]",
 		Short: "K3ai starting point. Up configure K3ai to work on local environment",
 		Run: func(cmd *cobra.Command, args []string) {
 			bQuiet, _ := cmd.Flags().GetBool("quiet")
 			sConfig, _ := cmd.Flags().GetString("config")
+			pat, _ := cmd.Flags().GetString("pat")
 			if _, err := os.Stat(homeDir + "/.config"); os.IsNotExist(err) {
 				err := os.Mkdir(homeDir+"/.config", 0755)
 				if err != nil {
@@ -67,11 +68,15 @@ func upCommand() *cobra.Command {
 					color.Alert()
 					// comment from here to below to bypass
 					fmt.Println(" ❌	Missing GitHub Authentication Token, please paste it here:")
-					bytepw, err := term.ReadPassword(int(syscall.Stdin))
-					if err != nil {
-						os.Exit(1)
+					if pat != "" {
+						token = pat
+					} else {
+						bytepw, err := term.ReadPassword(int(syscall.Stdin))
+						if err != nil {
+							os.Exit(1)
+						}
+						token = string(bytepw)
 					}
-					token = string(bytepw)
 					//comment above to bypass
 					// token ="" //add token to bypass
 					time.Sleep(700 * time.Millisecond)
@@ -211,5 +216,6 @@ func upCommand() *cobra.Command {
 	flags := upCmd.Flags()
 	flags.BoolVarP(&up.Quiet, "quiet", "q", false, "Suppress output messages. Useful when k3ai is used within scripts.")
 	flags.StringVarP(&up.Config, "config", "c", "", "Configure K3ai using a custom config file.[-c /path/tofile] [-c https://urlToFile]")
+	flags.StringVarP(&up.PAT, "pat", "p", "", "Send PAT (Personal Access Token) directly by skipping input.")
 	return upCmd
 }
