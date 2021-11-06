@@ -216,6 +216,6 @@ func upCommand() *cobra.Command {
 	flags := upCmd.Flags()
 	flags.BoolVarP(&up.Quiet, "quiet", "q", false, "Suppress output messages. Useful when k3ai is used within scripts.")
 	flags.StringVarP(&up.Config, "config", "c", "", "Configure K3ai using a custom config file.[-c /path/tofile] [-c https://urlToFile]")
-	flags.StringVarP(&up.PAT, "pat", "p", "", "Send PAT (Personal Access Token directly by skipping input")
+	flags.StringVarP(&up.PAT, "pat", "p", "", "Send PAT (Personal Access Token) directly by skipping input.")
 	return upCmd
 }
