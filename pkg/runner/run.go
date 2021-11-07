@@ -45,15 +45,11 @@ EOF
 `
 
 	name, ctype := db.ListClusterByName(target)
-	log.Println(name)
-	log.Println(ctype)
 	out := factory.Client(name, ctype)
-	log.Println(out)
 	home, _ := os.UserHomeDir()
 	shellPath := home + "/.k3ai"
 	outcome, err := exec.Command("/bin/bash", "-c", "cat <<EOF | "+shellPath+k3aiKube+" apply  --kubeconfig="+out+" -f - "+template).Output()
 	if err != nil {
-		log.Println("errored at apply")
 		log.Println(err)
 	}
 
