@@ -2,21 +2,46 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 
 	internal "github.com/k3ai/internal"
 	names "github.com/k3ai/internal/names"
 	color "github.com/k3ai/pkg/color"
 	db "github.com/k3ai/pkg/db"
+	"github.com/k3ai/pkg/http"
 	clusterOperation "github.com/k3ai/pkg/io/execution"
 	tables "github.com/k3ai/pkg/tables"
 )
 
 var extraArray string
+var k3aiConfig = internal.K3aiConfig{}
+
+func deployCluster(strName string, strType string, arrExtras string) {
+	res, _ := db.CheckClusterName(strName)
+	if res != "" {
+		strName = names.GeneratedName(1)
+	}
+	strName = strings.ToLower(strName)
+
+	statusOk, _ := clusterOperation.Deployment("cluster", strName, strType, arrExtras)
+	if statusOk {
+		clusterConfig := []string{strName, strType, "", "Installed"}
+		err := db.InsertCluster(clusterConfig)
+		if err != nil {
+			log.Fatal(err)
+		}
+		color.Done()
+		fmt.Println(" ✔️ Installation Done.")
+	} else {
+		log.Println("Error occurred while deploying cluster.")
+	}
+}
 
 func clusterCommand() *cobra.Command {
 	cluster := internal.Options{}
@@ -58,41 +83,40 @@ func clusterCommand() *cobra.Command {
 				}
 				os.Exit(0)
 			}
-			if !boolQuiet && strName == "" {
+			if strConf != "" {
+				if strings.TrimSpace(strConf)[:4] == "http" {
+					data, _ := http.Download(strConf)
+					err = yaml.Unmarshal([]byte(data), &k3aiConfig)
+					if err != nil {
+						log.Fatal(err)
+					}
+					strName = k3aiConfig.Cluster.Name
+					strType = k3aiConfig.Cluster.Type
+					deployCluster(strName, strType, arrExtras)
+				} else {
+					data, err := ioutil.ReadFile(strConf)
+					if err != nil {
+						log.Fatal(err)
+					}
+					err = yaml.Unmarshal(data, &k3aiConfig)
+					if err != nil {
+						log.Fatal(err)
+					}
+					strName = k3aiConfig.Cluster.Name
+					strType = k3aiConfig.Cluster.Type
+					deployCluster(strName, strType, arrExtras)
+				}
+			} else if !boolQuiet && strName == "" {
 				strName = names.GeneratedName(0)
 				res, _ := db.CheckClusterName(strName)
 				if res != "" {
 					strName = names.GeneratedName(1)
 				}
 				strName = strings.ToLower(strName)
-				statusOk, _ := clusterOperation.Deployment("cluster", strName, strType, arrExtras)
-				if statusOk {
-					clusterConfig := []string{strName, strType, "", "Installed"}
-					err := db.InsertCluster(clusterConfig)
-					if err != nil {
-						log.Fatal(err)
-					}
-					color.Done()
-					fmt.Println(" ✔️ Installation Done.")
-					// clusterOperation.Client(strName,strType)
-				}
+				deployCluster(strName, strType, arrExtras)
+
 			} else if !boolQuiet && strName != "" {
-				res, _ := db.CheckClusterName(strName)
-				if res != "" {
-					strName = names.GeneratedName(1)
-				}
-				strName = strings.ToLower(strName)
-				statusOk, _ := clusterOperation.Deployment("cluster", strName, strType, arrExtras)
-				if statusOk {
-					clusterConfig := []string{strName, strType, "", "Installed"}
-					err := db.InsertCluster(clusterConfig)
-					if err != nil {
-						log.Fatal(err)
-					}
-					fmt.Println(" ")
-					color.Done()
-					fmt.Println(" ✔️ Installation Done.")
-				}
+				deployCluster(strName, strType, arrExtras)
 			}
 		},
 	}

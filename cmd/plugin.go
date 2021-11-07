@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 
 	"github.com/k3ai/internal"
 	color "github.com/k3ai/pkg/color"
@@ -15,6 +17,34 @@ import (
 	pluginOperations "github.com/k3ai/pkg/io/execution"
 	tables "github.com/k3ai/pkg/tables"
 )
+
+func deployPlugin(strName string, strTarget string, extraArray string) {
+	statusOk, _ := pluginOperations.Deployment("plugin", strName, strTarget, extraArray)
+	if statusOk {
+		_, clusterType := db.CheckClusterName(strTarget)
+		out := pluginOperations.Client(strTarget, clusterType)
+		os.Remove(out)
+		fmt.Println(" ")
+		strIP := http.GetIP()
+		switch strName {
+		case "mlflow":
+			fmt.Println("We tried to publish MLFLow at:http://" + strIP + ":30500")
+		case "kf-pa":
+			fmt.Println("We tried to publish Kubeflow Pipelines at:http://" + strIP + ":30900")
+		case "kf-katib":
+			fmt.Println("We tried to publish Kubeflow Katib at:http://" + strIP + ":30600")
+		case "airflow":
+			fmt.Println("We tried to publish Apache Airflow at:http://" + strIP + ":30800")
+		case "argo-workflow":
+			fmt.Println("We tried to publish Argo Workflows at:http://" + strIP + ":32746")
+		}
+
+		color.Done()
+		fmt.Println(" ✔️ Installation Done.")
+	} else {
+		log.Println("Error occurred while deploying plugin.")
+	}
+}
 
 func pluginCommand() *cobra.Command {
 	plugin := internal.Options{}
@@ -41,15 +71,43 @@ func pluginCommand() *cobra.Command {
 			boolQuiet, _ := cmd.Flags().GetBool("quiet")
 			strName, _ := cmd.Flags().GetString("name")
 			strName = strings.ToLower(strName)
-			if len(args) >= 0 && strTarget == "" && strConf != "" && strName == "" {
+			if len(args) == 0 && strTarget == "" && strConf == "" && strName == "" {
+				err := cmd.Help()
+				if err != nil {
+					log.Fatal(err)
+				}
+				os.Exit(0)
+			} else if len(args) >= 0 && strTarget == "" && strConf == "" && strName == "" {
 				err := cmd.Help()
 				if err != nil {
 					log.Fatal(err)
 				}
 				os.Exit(0)
 			}
-			if !boolQuiet && strName == "" {
-
+			if strConf != "" {
+				if strings.TrimSpace(strConf)[:4] == "http" {
+					data, _ := http.Download(strConf)
+					err := yaml.Unmarshal([]byte(data), &k3aiConfig)
+					if err != nil {
+						log.Fatal(err)
+					}
+					strName = k3aiConfig.Plugin.Name
+					strTarget = k3aiConfig.Plugin.Target
+					deployPlugin(strName, strTarget, extraArray)
+				} else {
+					data, err := ioutil.ReadFile(strConf)
+					if err != nil {
+						log.Fatal(err)
+					}
+					err = yaml.Unmarshal(data, &k3aiConfig)
+					if err != nil {
+						log.Fatal(err)
+					}
+					strName = k3aiConfig.Plugin.Name
+					strTarget = k3aiConfig.Plugin.Target
+					deployPlugin(strName, strTarget, extraArray)
+				}
+			} else if !boolQuiet && strName == "" {
 				statusOk, _ := pluginOperations.Deployment("plugin", strName, strTarget, extraArray)
 				if statusOk {
 					clusterConfig := []string{strName, strTarget, "", "Installed"}
@@ -63,30 +121,7 @@ func pluginCommand() *cobra.Command {
 					// pluginOperations.Client(strName,strTarget)
 				}
 			} else if !boolQuiet && strName != "" {
-
-				statusOk, _ := pluginOperations.Deployment("plugin", strName, strTarget, extraArray)
-				if statusOk {
-					_, clusterType := db.CheckClusterName(strTarget)
-					out := pluginOperations.Client(strTarget, clusterType)
-					os.Remove(out)
-					fmt.Println(" ")
-					strIP := http.GetIP()
-					switch strName {
-					case "mlflow":
-						fmt.Println("We tried to publish MLFLow at:http://" + strIP + ":30500")
-					case "kf-pa":
-						fmt.Println("We tried to publish Kubeflow Pipelines at:http://" + strIP + ":30900")
-					case "kf-katib":
-						fmt.Println("We tried to publish Kubeflow Katib at:http://" + strIP + ":30600")
-					case "airflow":
-						fmt.Println("We tried to publish Apache Airflow at:http://" + strIP + ":30800")
-					case "argo-workflow":
-						fmt.Println("We tried to publish Argo Workflows at:http://" + strIP + ":32746")
-					}
-
-					color.Done()
-					fmt.Println(" ✔️ Installation Done.")
-				}
+				deployPlugin(strName, strTarget, extraArray)
 			}
 		},
 	}

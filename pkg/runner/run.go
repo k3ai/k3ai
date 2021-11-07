@@ -45,22 +45,23 @@ EOF
 `
 
 	name, ctype := db.ListClusterByName(target)
+	log.Println(name)
+	log.Println(ctype)
 	out := factory.Client(name, ctype)
+	log.Println(out)
 	home, _ := os.UserHomeDir()
 	shellPath := home + "/.k3ai"
 	outcome, err := exec.Command("/bin/bash", "-c", "cat <<EOF | "+shellPath+k3aiKube+" apply  --kubeconfig="+out+" -f - "+template).Output()
 	if err != nil {
+		log.Println("errored at apply")
 		log.Println(err)
 	}
 
-	_, err = exec.Command("/bin/bash", "-c", shellPath+k3aiKube+" wait --for=condition=Ready pods --all --all-namespaces  --kubeconfig="+out).Output()
-	if err != nil {
-		log.Fatal(err)
-	}
 	fmt.Println(string(outcome))
 
 	time.Sleep(10 * time.Second)
-	_, err = exec.Command("/bin/bash", "-c", shellPath+k3aiKube+" wait --for=condition=Ready pods --all --all-namespaces  --kubeconfig="+out).Output()
+	outcome_new, _ := exec.Command("/bin/bash", "-c", shellPath+k3aiKube+" wait --for=condition=Ready pods --all --all-namespaces  --kubeconfig="+out).Output()
+	fmt.Println(string(outcome_new))
 	if err != nil {
 		log.Fatal(err)
 	}

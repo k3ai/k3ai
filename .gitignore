@@ -4,3 +4,4 @@ vendor
 .env
 images
 Dockerfiles
+config.yaml
