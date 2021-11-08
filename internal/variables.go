@@ -69,6 +69,25 @@ type K3aiRootPlugin struct {
 
 	Resources []string `yaml:"resources,omitempty"`
 }
+
+type K3aiConfig struct {
+	Api     string `yaml:"api"`
+	Kind    string `yaml:"kind"`
+	Cluster struct {
+		Name string `yaml:"name"`
+		Type string `yaml:"type"`
+	}
+	Plugin struct {
+		Name   string `yaml:"name"`
+		Target string `yaml:"target"`
+	}
+	Run struct {
+		Source  string `yaml:"source"`
+		Target  string `yaml:"target"`
+		Backend string `yaml:"backend"`
+	}
+}
+
 type AppPlugin struct {
 	Api       string `yaml:"api"`
 	Kind      string `yaml:"kind"`

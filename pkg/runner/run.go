@@ -53,14 +53,11 @@ EOF
 		log.Println(err)
 	}
 
-	_, err = exec.Command("/bin/bash", "-c", shellPath+k3aiKube+" wait --for=condition=Ready pods --all --all-namespaces  --kubeconfig="+out).Output()
-	if err != nil {
-		log.Fatal(err)
-	}
 	fmt.Println(string(outcome))
 
 	time.Sleep(10 * time.Second)
-	_, err = exec.Command("/bin/bash", "-c", shellPath+k3aiKube+" wait --for=condition=Ready pods --all --all-namespaces  --kubeconfig="+out).Output()
+	outcome_new, _ := exec.Command("/bin/bash", "-c", shellPath+k3aiKube+" wait --for=condition=Ready pods --all --all-namespaces  --kubeconfig="+out).Output()
+	fmt.Println(string(outcome_new))
 	if err != nil {
 		log.Fatal(err)
 	}
