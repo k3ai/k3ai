@@ -6,21 +6,22 @@ var (
 )
 
 type Options struct {
-	Quiet    bool
-	PAT      string
-	Config   string
-	All      bool
-	Force    bool
-	Deploy   bool
-	Remove   bool
-	Name     string
-	Type     string
-	Target   string
-	Filter   string
-	Deployed bool
-	Source   string
-	Backend  string
-	Extras   string
+	Quiet      bool
+	PAT        string
+	Config     string
+	All        bool
+	Force      bool
+	Deploy     bool
+	Remove     bool
+	Name       string
+	Type       string
+	Target     string
+	Filter     string
+	Deployed   bool
+	Source     string
+	Backend    string
+	Extras     string
+	Entrypoint string
 }
 
 type Env struct {
