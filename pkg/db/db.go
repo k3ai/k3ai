@@ -10,7 +10,9 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 )
-var ctx context.Context
+
+var ctx context.Context //nolint
+
 const (
 	clusters = `CREATE TABLE "clusters" (
 		"name"	TEXT NOT NULL UNIQUE,
@@ -35,41 +37,40 @@ const (
 	);`
 )
 
-var tables = []string {clusters,plugins,currentStatus}
+var tables = []string{clusters, plugins, currentStatus}
 
 func DbLogin() (sqlDBConn *sql.DB) {
-	homeDir,_ := os.UserHomeDir()
+	homeDir, _ := os.UserHomeDir()
 	dbPath := homeDir + "/.k3ai/k3ai.db"
-	sqlDBConn, err := sql.Open("sqlite3",dbPath ) // Open the created SQLite File
+	sqlDBConn, err := sql.Open("sqlite3", dbPath) // Open the created SQLite File
 	if err != nil {
 		log.Fatal(err)
-	} 
+	}
 	// defer sqlDBConn.Close() // Defer Closing the database
 	// sqlDBConn.Close()
 	return sqlDBConn
 
 }
 
-
 func InitDB(ch chan bool) {
-	
-	homeDir,_ := os.UserHomeDir()
+
+	homeDir, _ := os.UserHomeDir()
 	if _, err := os.Stat(homeDir + "/.k3ai/k3ai.db"); os.IsNotExist(err) {
 		file, err := os.Create(homeDir + "/.k3ai/k3ai.db") // Create SQLite file
 		if err != nil {
 			log.Fatal(err)
 		}
 		file.Close()
-	sqlDBConn := DbLogin()
-	err = createTables(ch,sqlDBConn)
-	if err != nil {
-		log.Fatal(err)
+		sqlDBConn := DbLogin()
+		err = createTables(ch, sqlDBConn)
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 	ch <- true
 }
 
-func Insert(sqlDBConn *sql.DB ) error {
+func Insert(sqlDBConn *sql.DB) error {
 
 	insertStatus := `INSERT INTO listStatus (cluster_id,plugin_id)
 	SELECT plugins.id,clusters.id
@@ -81,41 +82,47 @@ func Insert(sqlDBConn *sql.DB ) error {
 		log.Fatal(err.Error())
 		return err
 	}
-	dbState.Exec()
+	_, err = dbState.Exec()
+	if err != nil {
+		log.Fatal(err)
+	}
 	return nil
 
 }
 
 func List(name string) (url string) {
 	db := DbLogin()
-	row, err := db.Query("SELECT url from PLUGINS where name=?;",name)
+	row, err := db.Query("SELECT url from PLUGINS where name=?;", name)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer row.Close()
 	row.Next()
-	row.Scan(&url)
+	err = row.Scan(&url)
+	if err != nil {
+		log.Fatal(err)
+	}
 	return url
 }
 
 func UpdatePlugins(plugin [7]string) error {
 	db := DbLogin()
-	
+
 	name := strings.ToLower(plugin[0])
 	desc := strings.ToLower(plugin[1])
 	ver := strings.ToLower(plugin[4])
-	tag  := strings.ToLower(plugin[3])
+	tag := strings.ToLower(plugin[3])
 	pluginType := strings.ToLower(plugin[2])
 	pluginUrl := strings.ToLower(plugin[5])
 	pluginStatus := strings.Title(plugin[6])
-	
+
 	fillApps := `INSERT OR REPLACE INTO plugins (name,desc,version,tag,ptype,url,status) VALUES (?, ?, ?, ?, ?,?,?);`
-	statement, _:= db.Prepare(fillApps)
-	_,err := statement.Exec(name,desc,ver,tag,pluginType,pluginUrl,pluginStatus)
+	statement, _ := db.Prepare(fillApps)
+	_, err := statement.Exec(name, desc, ver, tag, pluginType, pluginUrl, pluginStatus)
 	if err != nil {
 		fillNew := `INSERT INTO plugins (name,desc,version,tag,ptype,url,status) VALUES ?, ?, ?, ?, ?,?,?);`
-		alternative, _:= db.Prepare(fillNew)
-		_,err = alternative.Exec(name,desc,ver,tag,pluginType,pluginUrl,pluginStatus)
+		alternative, _ := db.Prepare(fillNew)
+		_, err = alternative.Exec(name, desc, ver, tag, pluginType, pluginUrl, pluginStatus)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -127,43 +134,45 @@ func UpdatePlugins(plugin [7]string) error {
 
 }
 
-
-func Delete(sqlDBConn *sql.DB ) {
+func Delete(sqlDBConn *sql.DB) {
 
 }
 
-func createTables(ch chan bool,sqlDBConn *sql.DB ) error {
-	for i:=0;i < len(tables); i++ {
+func createTables(ch chan bool, sqlDBConn *sql.DB) error {
+	for i := 0; i < len(tables); i++ {
 		dbState, err := sqlDBConn.Prepare(tables[i])
 		if err != nil {
 			log.Fatal(err.Error())
 			return err
 		}
-		dbState.Exec()
+		_, err = dbState.Exec()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	sqlDBConn.Close()
-	ch <-true
+	ch <- true
 	return nil
 }
 
-func InsertPlugins(plugin [7]string ) error {
+func InsertPlugins(plugin [7]string) error {
 	db := DbLogin()
-	
+
 	name := strings.ToLower(plugin[0])
 	desc := strings.ToLower(plugin[1])
 	ver := strings.ToLower(plugin[4])
-	tag  := strings.ToLower(plugin[3])
+	tag := strings.ToLower(plugin[3])
 	pluginType := strings.ToLower(plugin[2])
 	pluginUrl := strings.ToLower(plugin[5])
 	pluginStatus := strings.Title(plugin[6])
-	
+
 	fillApps := `INSERT INTO plugins(name,desc,version,tag,ptype,url,status) VALUES (?, ?, ?, ?, ?,?,?)`
-	statement, err:= db.Prepare(fillApps)
+	statement, err := db.Prepare(fillApps)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer statement.Close()
-	_,err = statement.Exec(name,desc,ver,tag,pluginType,pluginUrl,pluginStatus)
+	_, err = statement.Exec(name, desc, ver, tag, pluginType, pluginUrl, pluginStatus)
 	if err != nil {
 		log.Fatal(err)
 		return err
@@ -172,8 +181,7 @@ func InsertPlugins(plugin [7]string ) error {
 
 }
 
-
-func ListPlugins() (appsResults []string,infraResults []string,bundlesResults []string,commsResults[]string) {
+func ListPlugins() (appsResults []string, infraResults []string, bundlesResults []string, commsResults []string) {
 
 	db := DbLogin()
 	row, err := db.Query("SELECT * FROM plugins ORDER BY ptype;")
@@ -189,29 +197,32 @@ func ListPlugins() (appsResults []string,infraResults []string,bundlesResults []
 		var version string
 		var url string
 		var status string
-		row.Scan(&name,&desc,&ptype,&tag,&version,&url,&status)
-		if ptype == "application"{
-			appsResults = append(appsResults,name,desc,ptype,tag,version,status)
+		err := row.Scan(&name, &desc, &ptype, &tag, &version, &url, &status)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if ptype == "application" {
+			appsResults = append(appsResults, name, desc, ptype, tag, version, status)
 		}
 		if ptype == "infra" {
-			infraResults = append(infraResults,name,desc,ptype,tag,version, status)
+			infraResults = append(infraResults, name, desc, ptype, tag, version, status)
 		}
 		if ptype == "bundles" {
-			bundlesResults = append(bundlesResults,name,desc,ptype,tag,version, status)
+			bundlesResults = append(bundlesResults, name, desc, ptype, tag, version, status)
 		}
-		if ptype =="comms" {
-			commsResults = append(commsResults,name,desc,ptype,tag,version, status)
+		if ptype == "comms" {
+			commsResults = append(commsResults, name, desc, ptype, tag, version, status)
 		}
-		
+
 	}
-	
-	return appsResults,infraResults,bundlesResults,commsResults
+
+	return appsResults, infraResults, bundlesResults, commsResults
 }
 
-func ListPluginsByName(name string) (Results[]string) {
+func ListPluginsByName(name string) (Results []string) {
 
 	db := DbLogin()
-	row, err := db.Query("SELECT * FROM plugins WHERE name=?;",name)
+	row, err := db.Query("SELECT * FROM plugins WHERE name=?;", name)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -224,14 +235,17 @@ func ListPluginsByName(name string) (Results[]string) {
 		var version string
 		var url string
 		var status string
-		row.Scan(&name,&desc,&ptype,&tag,&version,&url,&status)
-		Results = append(Results,name,desc,ptype,tag,version,status)
-		
+		err := row.Scan(&name, &desc, &ptype, &tag, &version, &url, &status)
+		if err != nil {
+			log.Fatal(err)
+		}
+		Results = append(Results, name, desc, ptype, tag, version, status)
+
 	}
 	return Results
 }
 
-func ListClustersByName() (clusterResults[]string) {
+func ListClustersByName() (clusterResults []string) {
 
 	db := DbLogin()
 	row, err := db.Query("SELECT * from CLUSTERS;")
@@ -244,42 +258,47 @@ func ListClustersByName() (clusterResults[]string) {
 		var ctype string
 		var kube string
 		var status string
-		row.Scan(&name,&ctype,&kube,&status)
-		clusterResults = append(clusterResults,name,ctype,status)
+		err := row.Scan(&name, &ctype, &kube, &status)
+		if err != nil {
+			log.Fatal(err)
+		}
+		clusterResults = append(clusterResults, name, ctype, status)
 	}
 
-		
 	return clusterResults
 }
 
-func ListClusterByName(target string) (name string,ctype string) {
+func ListClusterByName(target string) (name string, ctype string) {
 
 	db := DbLogin()
-	row, err := db.Query("SELECT name,ctype from CLUSTERS WHERE name=?;",target)
+	row, err := db.Query("SELECT name,ctype from CLUSTERS WHERE name=?;", target)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer row.Close()
 	row.Next()
-	row.Scan(&name,&ctype)
-		
-	return name,ctype
+	err = row.Scan(&name, &ctype)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return name, ctype
 }
 
 func CheckClusterName(name string) (resname string, ctype string) {
 	db := DbLogin()
-	row, _ := db.Query("SELECT name,ctype from CLUSTERS where name=?;",name)
+	row, _ := db.Query("SELECT name,ctype from CLUSTERS where name=?;", name)
 
 	defer row.Close()
 	row.Next()
-	err := row.Scan(&name,&ctype)
+	err := row.Scan(&name, &ctype)
 	if err == nil {
-		return "name exist",ctype
+		return "name exist", ctype
 	}
-	return "",""
+	return "", ""
 }
 
-func InsertCluster(clusterConfig []string ) error {
+func InsertCluster(clusterConfig []string) error {
 
 	db := DbLogin()
 	insertStatus := `INSERT INTO clusters VALUES (?,?,?,?);`
@@ -289,11 +308,11 @@ func InsertCluster(clusterConfig []string ) error {
 		return err
 	}
 
-	_, err = dbState.Exec(clusterConfig[0],clusterConfig[1],clusterConfig[2],clusterConfig[3])
+	_, err = dbState.Exec(clusterConfig[0], clusterConfig[1], clusterConfig[2], clusterConfig[3])
 	return err
 }
 
-func DeleteCluster(name string ) error {
+func DeleteCluster(name string) error {
 	db := DbLogin()
 	insertStatus := `DELETE from clusters where name=?;`
 	dbState, err := db.Prepare(insertStatus)
@@ -318,7 +337,10 @@ func KubeStr() (kubeStr string) {
 		var ctype string
 		var kube string
 		var status string
-		row.Scan(&name,&ctype,&kube,&status)
+		err := row.Scan(&name, &ctype, &kube, &status)
+		if err != nil {
+			log.Fatal(err)
+		}
 		kubeStr = kube
 	}
 	return kubeStr

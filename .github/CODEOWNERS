@@ -3,8 +3,8 @@
 *.yaml @alefesta
 
 #reviewers
-/cmd/ @alefesta
-/pkg/ @alefesta
-/internal/ @alefesta
+/cmd/ @alefesta @burntcarrot
+/pkg/ @alefesta @burntcarrot
+/internal/ @alefesta @burntcarrot
 README.md @alefesta
 main.go @alefesta
