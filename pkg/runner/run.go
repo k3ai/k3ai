@@ -44,9 +44,7 @@ func Loader(source string,target string,backend string, extras string, entrypoin
 	var execTemplate string
 if entrypoint == "" {
 	execTemplate ="\"/opt/k3ai-executor -b " + backend + " -s " + source  + "\" "
-	execTemplate = execTemplate + `
-	EOF
-	`
+	execTemplate = execTemplate+ "\nEOF"
 }
 
 var execTemplateKfp ="\"/opt/k3ai-executor -b " + backend + " -s " + source  + " -e " + entrypoint + "\" "
