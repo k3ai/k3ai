@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
       - name: k3ai
-        image: ghcr.io/k3ai/k3ai-executor:dev
+        image: ghcr.io/k3ai/k3ai-executor:latest
         command: ["/bin/sleep", "3650d"]
 EOF
 `
@@ -70,10 +70,10 @@ EOF
 	if backend == "mlflow" {
 		_, err := exec.Command("/bin/bash", "-c", "cat <<EOF | "+shellPath+k3aiKube+"  --kubeconfig="+out+" exec  svc/minio-service -- bash -c \" mkdir /data/mlflow \"").Output()
 		if err != nil {
-		log.Println(err)
+			log.Println(err)
+		}
 	}
-	}
-	_,err = exec.Command("/bin/bash", "-c", shellPath+k3aiKube+" wait --for=condition=Ready pods --all -n default  --kubeconfig="+out).Output()
+	_, err = exec.Command("/bin/bash", "-c", shellPath+k3aiKube+" wait --for=condition=Ready pods --all -n default  --kubeconfig="+out).Output()
 	if err != nil {
 		log.Println(err)
 	}
