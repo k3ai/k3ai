@@ -130,8 +130,9 @@ EOF
 			fmt.Printf("\r %v", msg)
 			fmt.Println(" ")
 			for scanner.Scan() {
-				scanner.Text()
+				line := scanner.Text()
 				color.Disable()
+				log.Println(line)
 			}
 			done <- struct{}{}
 		}()
