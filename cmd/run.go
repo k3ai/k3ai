@@ -73,6 +73,7 @@ func runCommand() *cobra.Command {
 				log.Println("An error occurred, please retry and if persist, please open an issue on our GitHub repository.")
 			}
 			if !bQuiet {
+				log.Println("")
 				msg := "Completing execution..."
 				loader.SuperLoader(msg)
 			} else {

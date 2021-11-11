@@ -68,7 +68,7 @@ EOF
 	time.Sleep(10 * time.Second)
 
 	if backend == "mlflow" {
-		_, err := exec.Command("/bin/bash", "-c", "cat <<EOF | "+shellPath+k3aiKube+"  --kubeconfig="+out+" exec  svc/minio-service -- bash -c \" mkdir /data/mlflow \"").Output()
+		err := exec.Command("/bin/bash", "-c", "cat <<EOF | "+shellPath+k3aiKube+"  --kubeconfig="+out+" exec  svc/minio-service -- bash -c \" mkdir /data/mlflow \"")
 		if err != nil {
 			log.Println(err)
 		}
