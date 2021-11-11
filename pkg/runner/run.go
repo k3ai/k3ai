@@ -59,7 +59,10 @@ EOF
 		log.Println(err)
 	}
 
-	exec.Command("/bin/bash", "-c", shellPath+k3aiKube+" wait --for=condition=Ready pods --all -n default  --kubeconfig="+out).Output()
+	_, err = exec.Command("/bin/bash", "-c", shellPath+k3aiKube+" wait --for=condition=Ready pods --all -n default  --kubeconfig="+out).Output()
+	if err != nil {
+		log.Println(err)
+	}
 	fmt.Println(string(outcome))
 
 	time.Sleep(10 * time.Second)
@@ -67,7 +70,10 @@ EOF
 	if backend == "mlflow" {
 		exec.Command("/bin/bash", "-c", "cat <<EOF | "+shellPath+k3aiKube+"  --kubeconfig="+out+" exec  svc/minio-service -- bash -c \" mkdir /data/mlflow \"").Output()
 	}
-	exec.Command("/bin/bash", "-c", shellPath+k3aiKube+" wait --for=condition=Ready pods --all -n default  --kubeconfig="+out).Output()
+	_,err = exec.Command("/bin/bash", "-c", shellPath+k3aiKube+" wait --for=condition=Ready pods --all -n default  --kubeconfig="+out).Output()
+	if err != nil {
+		log.Println(err)
+	}
 
 	if backend == "mlflow" {
 		cmd := exec.Command("/bin/bash", "-c", "cat <<EOF | "+shellPath+k3aiKube+"  --kubeconfig="+out+" exec  deployment/k3ai-executor -- bash -c "+execTemplate)
