@@ -134,6 +134,7 @@ func Removal(actionType string, name string, ctype string) (status bool, err err
 }
 
 func innerPluginResource(name string, base string, url string, action string, clusterName string, extras string) error {
+
 	if strings.Contains(base, "../../") {
 		name = strings.ToLower(name)
 		base = strings.TrimLeft(base, "../..") + "/k3ai.yaml" //nolint:staticcheck
@@ -199,6 +200,12 @@ func innerPluginResource(name string, base string, url string, action string, cl
 					if action == "remove" {
 						if subPlugin.Resources[k].Remove != "" {
 							pathRemove := strings.Replace(subPlugin.Resources[k].Remove, "{{name}}", strings.ToLower(clusterName), -1)
+							if extras == "" {
+								//tanzu special case
+								home, _ := os.UserHomeDir()
+								shellPath := home + "/.k3ai"
+								extras = "--config " + shellPath + "/"+ strings.ToLower(clusterName) +".config"
+							}
 							err := shell(path, pathRemove, false, action, extras)
 							if err != nil {
 								log.Fatal(err)
@@ -232,6 +239,12 @@ func innerPluginResource(name string, base string, url string, action string, cl
 				path := strings.Replace(subPlugin.Resources[0].Path, "{{name}}", strings.ToLower(clusterName), -1)
 				if action == "remove" {
 					removePath := strings.Replace(subPlugin.Resources[0].Remove, "{{name}}", strings.ToLower(clusterName), -1)
+					if extras == "" {
+						//tanzu special case
+						home, _ := os.UserHomeDir()
+						shellPath := home + "/.k3ai"
+						extras = "--config " + shellPath + "/"+ strings.ToLower(clusterName) +".config"
+					}
 					err := shell(removePath, "", false, action, extras)
 					if err != nil {
 						log.Fatal(err)
@@ -315,10 +328,17 @@ func shell(pluginEx string, pluginArgs string, outPrint bool, action string, ext
 		}
 		return err
 	} else if action == "remove" {
+		var cmd *exec.Cmd
 		color.Done()
 		fmt.Println(" 🚀 Removing installation...")
 		fmt.Println(" ")
-		cmd := exec.Command("/bin/bash", "-c", pluginArgs)
+		if pluginArgs != "" {
+			//special tanzu case
+			cmd = exec.Command("/bin/bash", "-c", pluginArgs + " " + extras + " -y")
+		} else {
+			cmd = exec.Command("/bin/bash", "-c", pluginEx)
+		}
+		
 		cmd.Dir = shellPath
 		r, _ := cmd.StdoutPipe()
 		cmd.Stderr = cmd.Stdout
