@@ -39,6 +39,7 @@ const (
 	k3aiHelm = ".tools/helm" //nolint
 	lnxApp   = "/bin/bash"   //nolint
 	civoCli  = ".tools/civo" //nolint
+	clusterTest = true
 )
 
 var (
@@ -59,10 +60,21 @@ func Deployment(actionType string, name string, ctype string, extras string) (st
 		url := db.List(ctype)
 		data, _ := http.Download(url)
 		_ = yaml.Unmarshal([]byte(data), &rootPlugin)
-		if strings.ToLower(rootPlugin.Metadata.PluginStatus) != "available" {
+		if strings.ToLower(rootPlugin.Metadata.PluginStatus) != "available" && !clusterTest {
 			color.Alert()
 			fmt.Println("🥺 We are sorry, currently the plugin is unavailable")
 			os.Exit(1)
+		}
+		if strings.ToLower(rootPlugin.Metadata.Name) == "tanzu" {
+			_, err := exec.LookPath("kubectl")
+			if err != nil {
+				home, _ := os.UserHomeDir()
+				shellPath := home + "/.k3ai/.tools/kubectl"
+				_,err = exec.Command("/bin/bash", "-c", "sudo cp " + shellPath + " /usr/local/bin/").Output()
+				if err != nil {
+					log.Println(err)
+				}
+			}
 		}
 
 		if len(rootPlugin.Resources) > 1 {
@@ -95,7 +107,7 @@ func Deployment(actionType string, name string, ctype string, extras string) (st
 func Removal(actionType string, name string, ctype string) (status bool, err error) {
 	var extras string
 	if actionType == "cluster" {
-		clusterResults := db.ListClustersByName()
+		clusterResults := db.ListClusterByName(name)
 		url := db.List(clusterResults[1])
 		data, _ := http.Download(url)
 		_ = yaml.Unmarshal([]byte(data), &rootPlugin)
@@ -122,6 +134,7 @@ func Removal(actionType string, name string, ctype string) (status bool, err err
 }
 
 func innerPluginResource(name string, base string, url string, action string, clusterName string, extras string) error {
+
 	if strings.Contains(base, "../../") {
 		name = strings.ToLower(name)
 		base = strings.TrimLeft(base, "../..") + "/k3ai.yaml" //nolint:staticcheck
@@ -187,6 +200,12 @@ func innerPluginResource(name string, base string, url string, action string, cl
 					if action == "remove" {
 						if subPlugin.Resources[k].Remove != "" {
 							pathRemove := strings.Replace(subPlugin.Resources[k].Remove, "{{name}}", strings.ToLower(clusterName), -1)
+							if extras == "" {
+								//tanzu special case
+								home, _ := os.UserHomeDir()
+								shellPath := home + "/.k3ai"
+								extras = "--config " + shellPath + "/"+ strings.ToLower(clusterName) +".config"
+							}
 							err := shell(path, pathRemove, false, action, extras)
 							if err != nil {
 								log.Fatal(err)
@@ -220,6 +239,12 @@ func innerPluginResource(name string, base string, url string, action string, cl
 				path := strings.Replace(subPlugin.Resources[0].Path, "{{name}}", strings.ToLower(clusterName), -1)
 				if action == "remove" {
 					removePath := strings.Replace(subPlugin.Resources[0].Remove, "{{name}}", strings.ToLower(clusterName), -1)
+					if extras == "" {
+						//tanzu special case
+						home, _ := os.UserHomeDir()
+						shellPath := home + "/.k3ai"
+						extras = "--config " + shellPath + "/"+ strings.ToLower(clusterName) +".config"
+					}
 					err := shell(removePath, "", false, action, extras)
 					if err != nil {
 						log.Fatal(err)
@@ -267,6 +292,7 @@ func shell(pluginEx string, pluginArgs string, outPrint bool, action string, ext
 		if extras != "" {
 			pluginArgs = pluginArgs + " " + extras
 		}
+
 		pluginEx = strings.Replace(pluginEx, "{{extras}}", pluginArgs, -1)
 		cmd := exec.Command("/bin/bash", "-c", pluginEx)
 		cmd.Dir = shellPath
@@ -302,10 +328,17 @@ func shell(pluginEx string, pluginArgs string, outPrint bool, action string, ext
 		}
 		return err
 	} else if action == "remove" {
+		var cmd *exec.Cmd
 		color.Done()
 		fmt.Println(" 🚀 Removing installation...")
 		fmt.Println(" ")
-		cmd := exec.Command("/bin/bash", "-c", pluginEx)
+		if pluginArgs != "" {
+			//special tanzu case
+			cmd = exec.Command("/bin/bash", "-c", pluginArgs + " " + extras + " -y")
+		} else {
+			cmd = exec.Command("/bin/bash", "-c", pluginEx)
+		}
+		
 		cmd.Dir = shellPath
 		r, _ := cmd.StdoutPipe()
 		cmd.Stderr = cmd.Stdout
