@@ -39,6 +39,7 @@ const (
 	k3aiHelm = ".tools/helm" //nolint
 	lnxApp   = "/bin/bash"   //nolint
 	civoCli  = ".tools/civo" //nolint
+	clusterTest = true
 )
 
 var (
@@ -59,10 +60,21 @@ func Deployment(actionType string, name string, ctype string, extras string) (st
 		url := db.List(ctype)
 		data, _ := http.Download(url)
 		_ = yaml.Unmarshal([]byte(data), &rootPlugin)
-		if strings.ToLower(rootPlugin.Metadata.PluginStatus) != "available" {
+		if strings.ToLower(rootPlugin.Metadata.PluginStatus) != "available" && !clusterTest {
 			color.Alert()
 			fmt.Println("🥺 We are sorry, currently the plugin is unavailable")
 			os.Exit(1)
+		}
+		if strings.ToLower(rootPlugin.Metadata.Name) == "tanzu" {
+			_, err := exec.LookPath("kubectl")
+			if err != nil {
+				home, _ := os.UserHomeDir()
+				shellPath := home + "/.k3ai/.tools/kubectl"
+				_,err = exec.Command("/bin/bash", "-c", "sudo cp " + shellPath + " /usr/local/bin/").Output()
+				if err != nil {
+					log.Println(err)
+				}
+			}
 		}
 
 		if len(rootPlugin.Resources) > 1 {
@@ -95,7 +107,7 @@ func Deployment(actionType string, name string, ctype string, extras string) (st
 func Removal(actionType string, name string, ctype string) (status bool, err error) {
 	var extras string
 	if actionType == "cluster" {
-		clusterResults := db.ListClustersByName()
+		clusterResults := db.ListClusterByName(name)
 		url := db.List(clusterResults[1])
 		data, _ := http.Download(url)
 		_ = yaml.Unmarshal([]byte(data), &rootPlugin)
@@ -267,6 +279,7 @@ func shell(pluginEx string, pluginArgs string, outPrint bool, action string, ext
 		if extras != "" {
 			pluginArgs = pluginArgs + " " + extras
 		}
+
 		pluginEx = strings.Replace(pluginEx, "{{extras}}", pluginArgs, -1)
 		cmd := exec.Command("/bin/bash", "-c", pluginEx)
 		cmd.Dir = shellPath
@@ -305,7 +318,7 @@ func shell(pluginEx string, pluginArgs string, outPrint bool, action string, ext
 		color.Done()
 		fmt.Println(" 🚀 Removing installation...")
 		fmt.Println(" ")
-		cmd := exec.Command("/bin/bash", "-c", pluginEx)
+		cmd := exec.Command("/bin/bash", "-c", pluginArgs)
 		cmd.Dir = shellPath
 		r, _ := cmd.StdoutPipe()
 		cmd.Stderr = cmd.Stdout

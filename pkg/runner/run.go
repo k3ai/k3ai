@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
       - name: k3ai
-        image: ghcr.io/k3ai/k3ai-executor:latest
+        image: ghcr.io/k3ai/k3ai-executor:dev
         command: ["/bin/sleep", "3650d"]
 EOF
 `
@@ -50,8 +50,8 @@ func Loader(source string, target string, backend string, extras string, entrypo
 EOF
 `
 
-	name, ctype := db.ListClusterByName(target)
-	out := factory.Client(name, ctype)
+	clusterResults := db.ListClusterByName(target)
+	out := factory.Client(clusterResults[0],clusterResults[1])
 	home, _ := os.UserHomeDir()
 	shellPath := home + "/.k3ai"
 	outcome, err := exec.Command("/bin/bash", "-c", "cat <<EOF | "+shellPath+k3aiKube+" apply  --kubeconfig="+out+" -f - "+template).Output()
@@ -70,7 +70,7 @@ EOF
 	if backend == "mlflow" {
 		err := exec.Command("/bin/bash", "-c", "cat <<EOF | "+shellPath+k3aiKube+"  --kubeconfig="+out+" exec  svc/minio-service -- bash -c \" mkdir /data/mlflow \"")
 		if err != nil {
-			log.Println(err)
+			log.Println(" ")
 		}
 	}
 	_, err = exec.Command("/bin/bash", "-c", shellPath+k3aiKube+" wait --for=condition=Ready pods --all -n default  --kubeconfig="+out).Output()
