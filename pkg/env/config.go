@@ -32,7 +32,7 @@ const (
 	kubectlSha256 = "https://dl.k8s.io/v1.22.2/bin/linux/amd64/kubectl.sha256" //nolint
 	helmUrl       = "https://get.helm.sh/helm-v3.7.0-linux-amd64.tar.gz"
 	nerdctl       = "" //nolint
-	civoUrl       = "https://github.com/civo/cli/releases/download/v0.7.6/civo-0.7.6-linux-amd64.tar.gz"
+	civoUrl       = "https://github.com/civo/cli/releases/download/v1.0.4/civo-1.0.4-linux-amd64.tar.gz"
 )
 
 /*
@@ -170,7 +170,7 @@ func civoConfig() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = exec.Command("tar", "-xvzf", k3aiDir+"/civo-0.7.6-linux-amd64.tar.gz", "-C", k3aiDir+"/civodir").Output()
+	_, err = exec.Command("tar", "-xvzf", k3aiDir+"/civo-1.0.4-linux-amd64.tar.gz", "-C", k3aiDir+"/civodir").Output()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -182,7 +182,7 @@ func civoConfig() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = exec.Command("/bin/bash", "-c", "rm "+"-r "+k3aiDir+"/civo-0.7.6-linux-amd64.tar.gz").Output()
+	_, err = exec.Command("/bin/bash", "-c", "rm "+"-r "+k3aiDir+"/civo-1.0.4-linux-amd64.tar.gz").Output()
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	// "strings"
 
@@ -31,6 +32,7 @@ import (
 	color "github.com/k3ai/pkg/color"
 	db "github.com/k3ai/pkg/db"
 	http "github.com/k3ai/pkg/http"
+	infra "github.com/k3ai/pkg/infra"
 	gh "github.com/k3ai/pkg/io/git"
 )
 
@@ -196,7 +198,31 @@ func innerPluginResource(name string, base string, url string, action string, cl
 					}
 
 				} else if subPlugin.Resources[k].PluginType == "shell" {
-					path := strings.Replace(subPlugin.Resources[k].Path, "{{name}}", strings.ToLower(clusterName), -1)
+					var path string
+					if name == "civo" {
+						home, _ := os.UserHomeDir()
+						civoPath := home + "/.k3ai/.tools/civo"
+						civoClusterPath := home + "/.k3ai/"
+						civo := strings.Replace(subPlugin.Resources[k].Path, "{{civo}}", strings.ToLower(civoPath), -1)
+						civoKey,err := infra.InitCivo()
+						if err != nil {
+							log.Println(err)
+						}
+						preRegion := strings.SplitAfter(strings.ToLower(extras),"--region")
+						clusterName = strings.Trim(clusterName," ")
+						region := strings.Split(preRegion[1]," ")
+						_ = infra.ConfigCivo(clusterName,region[1])
+	
+						civo = strings.Replace(civo, "{{key}}", strings.ToLower(civoKey), -1)
+						civo = strings.Replace(civo, "{{name}}", strings.ToLower(clusterName), -1)
+						civo = strings.Replace(civo, "{{extras}}", strings.ToLower(extras), -1)
+						civo = strings.Replace(civo, "{{region}}", strings.ToUpper(region[1]), -1)
+						civo = strings.Replace(civo, "{{config}}", civoClusterPath + "/"+ clusterName + ".config", -1)
+						path = civo
+					} else {
+						path = strings.Replace(subPlugin.Resources[k].Path, "{{name}}", strings.ToLower(clusterName), -1)
+					}
+					
 					if action == "remove" {
 						if subPlugin.Resources[k].Remove != "" {
 							pathRemove := strings.Replace(subPlugin.Resources[k].Remove, "{{name}}", strings.ToLower(clusterName), -1)
@@ -236,7 +262,31 @@ func innerPluginResource(name string, base string, url string, action string, cl
 					log.Fatal(err)
 				}
 			} else if subPlugin.Resources[0].PluginType == "shell" {
-				path := strings.Replace(subPlugin.Resources[0].Path, "{{name}}", strings.ToLower(clusterName), -1)
+				var path string
+				if name == "civo" {
+					home, _ := os.UserHomeDir()
+					civoPath := home + "/.k3ai/.tools/civo"
+					civoClusterPath := home + "/.k3ai/"
+					civo := strings.Replace(subPlugin.Resources[0].Path, "{{civo}}", strings.ToLower(civoPath), -1)
+					civoKey,err := infra.InitCivo()
+					if err != nil {
+						log.Println(err)
+					}
+					preRegion := strings.SplitAfter(strings.ToLower(extras),"--region")
+					clusterName = strings.Trim(clusterName," ")
+					region := strings.Split(preRegion[1]," ")
+					_ = infra.ConfigCivo(clusterName,region[1])
+
+					civo = strings.Replace(civo, "{{key}}", strings.ToLower(civoKey), -1)
+					civo = strings.Replace(civo, "{{name}}", strings.ToLower(clusterName), -1)
+					civo = strings.Replace(civo, "{{extras}}", strings.ToLower(extras), -1)
+					civo = strings.Replace(civo, "{{region}}", strings.ToUpper(region[1]), -1)
+					civo = strings.Replace(civo, "{{config}}", civoClusterPath + "/"+ clusterName + ".config", -1)
+					path = civo
+				} else {
+					path = strings.Replace(subPlugin.Resources[0].Path, "{{name}}", strings.ToLower(clusterName), -1)
+				}
+				
 				if action == "remove" {
 					removePath := strings.Replace(subPlugin.Resources[0].Remove, "{{name}}", strings.ToLower(clusterName), -1)
 					if extras == "" {
@@ -322,6 +372,10 @@ func shell(pluginEx string, pluginArgs string, outPrint bool, action string, ext
 			log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")
 		}
 		<-done
+		if strings.Contains(pluginEx,"civo kubernetes create") {
+			fmt.Println(" 🚀  Waiting for the cluster to become available...")
+			time.Sleep(120 * time.Second)			
+		}
 		err = cmd.Wait()
 		if err != nil {
 			log.Fatal(err)

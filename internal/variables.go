@@ -26,6 +26,7 @@ type Options struct {
 
 type Env struct {
 	K3AI_TOKEN string `yaml:"K3AI_TOKEN"`
+	CIVO_TOKEN string  `yaml:"CIVO_TOKEN"`
 }
 
 type K3aiPlugin struct {
