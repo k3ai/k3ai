@@ -1,43 +1,40 @@
+# ########################################################## #
+# Makefile for Golang Project
+# Includes cross-compiling, installation, cleanup
+# ########################################################## #
 
-.PHONY: build clean test help default
+# Check for required command tools to build or stop immediately
+EXECUTABLES = git go find pwd
+K := $(foreach exec,$(EXECUTABLES),\
+        $(if $(shell which $(exec)),some string,$(error "No $(exec) in PATH)))
 
+ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
+BINARY=k3ai
+VERSION=1.0.1
+BUILD=`git rev-parse HEAD`
+PLATFORMS=darwin linux 
+ARCHITECTURES= amd64
 
-BIN_NAME=k3ai
-
-VERSION := $(shell grep "const Version " version/version.go | sed -E 's/.*"(.+)"$$/\1/')
-GIT_COMMIT=$(shell git rev-parse HEAD)
-GIT_DIRTY=$(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)
-BUILD_DATE=$(shell date '+%Y-%m-%d-%H:%M:%S')
-IMAGE_NAME := "alefesta/k3ai"
-GOOS:=$(shell go env GOOS)
-GOARCH:=$(shell go env GOARCH)
-
-LDFLAGS:= -w -s
+# Setup linker flags option for build that interoperate with variable names in src code
+LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
 default: build
 
-help:
-	@echo 'Management commands for k3ai:'
-	@echo
-	@echo 'Usage:'
-	@echo '    make build           Compile the project.'
-	@echo '    make get-deps        runs dep ensure, mostly used for ci.'
-	
-	@echo '    make clean           Clean the directory tree.'
-	@echo
+all: clean build_all install
 
 build:
-	@echo "building ${BIN_NAME} ${VERSION}"
-	@echo "GOPATH=${GOPATH}"
-	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -ldflags "-w -s -X github.com/k3ai/version.GitCommit=${GIT_COMMIT}${GIT_DIRTY} -X github.com/k3ai/version.BuildDate=${BUILD_DATE}" -o bin/${BIN_NAME}
+	go build ${LDFLAGS} -o ${BINARY}
 
-get-deps:
-	dep ensure
+build_all:
+	$(foreach GOOS, $(PLATFORMS),\
+	$(foreach GOARCH, $(ARCHITECTURES), $(shell export GOOS=$(GOOS); export GOARCH=$(GOARCH); go build -v -o bin/$(BINARY)-$(GOOS)-$(GOARCH))))
 
+install:
+	go install ${LDFLAGS}
+
+# Remove only what we've created
 clean:
-	@test ! -e bin/${BIN_NAME} || rm bin/${BIN_NAME}
+	find ${ROOT_DIR} -name 'bin/${BINARY}[-?][a-zA-Z0-9]*[-?][a-zA-Z0-9]*' -delete
 
-test:
-	go test ./...
-
+.PHONY: check clean install build_all all
