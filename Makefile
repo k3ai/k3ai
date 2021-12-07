@@ -14,7 +14,7 @@ BINARY=k3ai
 VERSION=1.0.1
 BUILD=`git rev-parse HEAD`
 PLATFORMS=darwin linux 
-ARCHITECTURES=arm64 amd64
+ARCHITECTURES= amd64
 
 # Setup linker flags option for build that interoperate with variable names in src code
 LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"

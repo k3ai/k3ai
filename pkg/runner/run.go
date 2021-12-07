@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
       - name: k3ai
-        image: ghcr.io/k3ai/k3ai-executor:dev
+        image: ghcr.io/k3ai/k3ai-executor:latest
         command: ["/bin/sleep", "3650d"]
 EOF
 `
