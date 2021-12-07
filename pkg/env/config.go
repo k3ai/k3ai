@@ -18,6 +18,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 
 	"github.com/spf13/viper"
 
@@ -29,10 +30,18 @@ const (
 	k3aiPath      = "/.k3ai"
 	configUrl     = "https://raw.githubusercontent.com/k3ai/plugins/main/config.json"
 	kubectlUrl    = "https://dl.k8s.io/release/v1.22.2/bin/linux/amd64/kubectl"
+	kubectlUrlARM = "https://dl.k8s.io/release/v1.22.2/bin/linux/arm64/kubectl"
+	kubectlUrlDarwin = "https://dl.k8s.io/release/v1.22.2/bin/darwin/amd64/kubectl"
 	kubectlSha256 = "https://dl.k8s.io/v1.22.2/bin/linux/amd64/kubectl.sha256" //nolint
+	kubectlSha256ARM = "https://dl.k8s.io/v1.22.2/bin/linux/arm64/kubectl.sha256"
+	kubectlSha256Darwin = "https://dl.k8s.io/v1.22.2/bin/darwin/amd64/kubectl.sha256"
 	helmUrl       = "https://get.helm.sh/helm-v3.7.0-linux-amd64.tar.gz"
+	helmUrlARM	  = "https://get.helm.sh/helm-v3.7.0-linux-arm64.tar.gz"
+	helmUrlDarwin = "https://get.helm.sh/helm-v3.7.0-darwin-amd64.tar.gz"
 	nerdctl       = "" //nolint
 	civoUrl       = "https://github.com/civo/cli/releases/download/v1.0.4/civo-1.0.4-linux-amd64.tar.gz"
+	civoUrlARM    = "https://github.com/civo/cli/releases/download/v1.0.4/civo-1.0.4-linux-arm64.tar.gz"
+	civoUrlDarwin = "https://github.com/civo/cli/releases/download/v1.0.4/civo-1.0.4-darwin-amd64.tar.gz"
 )
 
 /*
@@ -115,10 +124,17 @@ func Config() {
 }
 
 func kubectlConfig() {
+	var err error
 	homedir, _ := os.UserHomeDir()
 	k3aiDir := homedir + "/.k3ai/.tools/"
-
-	_, err := exec.Command("wget", kubectlUrl, "-P", k3aiDir).Output()
+	if runtime.GOARCH == "arm64" {
+		_, err = exec.Command("wget", kubectlUrlARM, "-P", k3aiDir).Output()
+	} else if runtime.GOARCH == "darwin" {
+		_, err = exec.Command("wget", kubectlUrlDarwin, "-P", k3aiDir).Output()
+	} else {
+		_, err = exec.Command("wget", kubectlUrl, "-P", k3aiDir).Output()
+	}
+	
 	if err != nil {
 		log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")
 		os.Exit(0)
@@ -130,10 +146,17 @@ func kubectlConfig() {
 }
 
 func helmConfig(ch chan bool) {
+	var err error
 	homedir, _ := os.UserHomeDir()
 	k3aiDir := homedir + "/.k3ai/.tools/"
-
-	_, err := exec.Command("wget", helmUrl, "-P", k3aiDir).Output()
+	if runtime.GOARCH == "arm64" {
+		_, err = exec.Command("wget", helmUrlARM, "-P", k3aiDir).Output()
+	} else if runtime.GOARCH == "darwin" {
+		_, err = exec.Command("wget", helmUrlDarwin, "-P", k3aiDir).Output()
+	} else {
+		_, err = exec.Command("wget", helmUrl, "-P", k3aiDir).Output()
+	}
+	
 	if err != nil {
 		log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")
 		os.Exit(0)
@@ -158,10 +181,17 @@ func helmConfig(ch chan bool) {
 }
 
 func civoConfig() {
+	var err error
 	homedir, _ := os.UserHomeDir()
 	k3aiDir := homedir + "/.k3ai/.tools/"
-
-	_, err := exec.Command("wget", civoUrl, "-P", k3aiDir).Output()
+	if runtime.GOARCH == "arm64" {
+		_, err = exec.Command("wget", civoUrl, "-P", k3aiDir).Output()
+	} else if runtime.GOARCH == "darwin" {
+		_, err = exec.Command("wget", civoUrl, "-P", k3aiDir).Output()
+	} else {
+		_, err = exec.Command("wget", civoUrl, "-P", k3aiDir).Output()
+	}
+	
 	if err != nil {
 		log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")
 		os.Exit(0)
@@ -170,10 +200,23 @@ func civoConfig() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = exec.Command("tar", "-xvzf", k3aiDir+"/civo-1.0.4-linux-amd64.tar.gz", "-C", k3aiDir+"/civodir").Output()
-	if err != nil {
-		log.Fatal(err)
+	if runtime.GOARCH == "arm64" {
+		_, err = exec.Command("tar", "-xvzf", k3aiDir+"/civo-1.0.4-linux-arm64.tar.gz", "-C", k3aiDir+"/civodir").Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if runtime.GOARCH == "darwin" {
+		_, err = exec.Command("tar", "-xvzf", k3aiDir+"/civo-1.0.4-darwin-amd64.tar.gz", "-C", k3aiDir+"/civodir").Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		_, err = exec.Command("tar", "-xvzf", k3aiDir+"/civo-1.0.4-linux-amd64.tar.gz", "-C", k3aiDir+"/civodir").Output()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
+
 	_, err = exec.Command("/bin/bash", "-c", "mv "+k3aiDir+"civodir/civo "+k3aiDir).Output()
 	if err != nil {
 		log.Fatal(err)

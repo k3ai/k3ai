@@ -41,7 +41,7 @@ const (
 	k3aiHelm = ".tools/helm" //nolint
 	lnxApp   = "/bin/bash"   //nolint
 	civoCli  = ".tools/civo" //nolint
-	clusterTest = true
+	clusterTest = false
 )
 
 var (
