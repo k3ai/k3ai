@@ -161,22 +161,59 @@ func helmConfig(ch chan bool) {
 		log.Println("Something went wrong... did you check all the prerequisites to run this plugin? If so try to re-run the k3ai command...")
 		os.Exit(0)
 	}
-	_, err = exec.Command("tar", "-xvzf", k3aiDir+"/helm-v3.7.0-linux-amd64.tar.gz", "-C", k3aiDir).Output()
-	if err != nil {
-		log.Fatal(err)
+	if runtime.GOARCH == "arm64" {
+		_, err = exec.Command("tar", "-xvzf", k3aiDir+"/helm-v3.7.0-linux-arm64.tar.gz", "-C", k3aiDir).Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+		_, err = exec.Command("/bin/bash", "-c", "mv "+k3aiDir+"/linux-arm64/helm "+k3aiDir).Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+		_, err = exec.Command("/bin/bash", "-c", "rm "+k3aiDir+"/helm-v3.7.0-linux-arm64.tar.gz").Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+		_, err = exec.Command("/bin/bash", "-c", "rm -r "+k3aiDir+"/linux-arm64").Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if runtime.GOARCH == "darwin" {
+		_, err = exec.Command("tar", "-xvzf", k3aiDir+"/helm-v3.7.0-darwin-amd64.tar.gz", "-C", k3aiDir).Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+		_, err = exec.Command("/bin/bash", "-c", "mv "+k3aiDir+"/darwin-amd64/helm "+k3aiDir).Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+		_, err = exec.Command("/bin/bash", "-c", "rm "+k3aiDir+"/helm-v3.7.0-darwin-amd64.tar.gz").Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+		_, err = exec.Command("/bin/bash", "-c", "rm -r "+k3aiDir+"/darwin-amd64").Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		_, err = exec.Command("tar", "-xvzf", k3aiDir+"/helm-v3.7.0-linux-amd64.tar.gz", "-C", k3aiDir).Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+		_, err = exec.Command("/bin/bash", "-c", "mv "+k3aiDir+"/linux-amd64/helm "+k3aiDir).Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+		_, err = exec.Command("/bin/bash", "-c", "rm "+k3aiDir+"/helm-v3.7.0-linux-amd64.tar.gz").Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+		_, err = exec.Command("/bin/bash", "-c", "rm -r "+k3aiDir+"/linux-amd64").Output()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
-	_, err = exec.Command("/bin/bash", "-c", "mv "+k3aiDir+"/linux-amd64/helm "+k3aiDir).Output()
-	if err != nil {
-		log.Fatal(err)
-	}
-	_, err = exec.Command("/bin/bash", "-c", "rm "+k3aiDir+"/helm-v3.7.0-linux-amd64.tar.gz").Output()
-	if err != nil {
-		log.Fatal(err)
-	}
-	_, err = exec.Command("/bin/bash", "-c", "rm -r "+k3aiDir+"/linux-amd64").Output()
-	if err != nil {
-		log.Fatal(err)
-	}
+
 	ch <- true
 }
 
