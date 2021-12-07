@@ -262,8 +262,22 @@ func civoConfig() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = exec.Command("/bin/bash", "-c", "rm "+"-r "+k3aiDir+"/civo-1.0.4-linux-amd64.tar.gz").Output()
-	if err != nil {
-		log.Fatal(err)
+
+	if runtime.GOARCH == "arm64" {
+		_, err = exec.Command("/bin/bash", "-c", "rm "+"-r "+k3aiDir+"/civo-1.0.4-linux-arm64.tar.gz").Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if runtime.GOARCH == "darwin" {
+		_, err = exec.Command("/bin/bash", "-c", "rm "+"-r "+k3aiDir+"/civo-1.0.4-darwin-amd64.tar.gz").Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		_, err = exec.Command("tar", "-xvzf", k3aiDir+"/civo-1.0.4-linux-amd64.tar.gz", "-C", k3aiDir+"/civodir").Output()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
+
 }
