@@ -3,7 +3,7 @@
 echo "Downloading k3ai..."
 sleep 1
 
-wget https://github.com/k3ai/k3ai/releases/download/1.0/k3ai
+wget https://github.com/k3ai/k3ai/releases/download/1.0.1/k3ai
 
 chmod +x k3ai
 
