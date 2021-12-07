@@ -33,8 +33,8 @@ const (
 	kubectlUrlARM = "https://dl.k8s.io/release/v1.22.2/bin/linux/arm64/kubectl"
 	kubectlUrlDarwin = "https://dl.k8s.io/release/v1.22.2/bin/darwin/amd64/kubectl"
 	kubectlSha256 = "https://dl.k8s.io/v1.22.2/bin/linux/amd64/kubectl.sha256" //nolint
-	kubectlSha256ARM = "https://dl.k8s.io/v1.22.2/bin/linux/arm64/kubectl.sha256"
-	kubectlSha256Darwin = "https://dl.k8s.io/v1.22.2/bin/darwin/amd64/kubectl.sha256"
+	kubectlSha256ARM = "https://dl.k8s.io/v1.22.2/bin/linux/arm64/kubectl.sha256" //nolint
+	kubectlSha256Darwin = "https://dl.k8s.io/v1.22.2/bin/darwin/amd64/kubectl.sha256" //nolint
 	helmUrl       = "https://get.helm.sh/helm-v3.7.0-linux-amd64.tar.gz"
 	helmUrlARM	  = "https://get.helm.sh/helm-v3.7.0-linux-arm64.tar.gz"
 	helmUrlDarwin = "https://get.helm.sh/helm-v3.7.0-darwin-amd64.tar.gz"
@@ -185,9 +185,9 @@ func civoConfig() {
 	homedir, _ := os.UserHomeDir()
 	k3aiDir := homedir + "/.k3ai/.tools/"
 	if runtime.GOARCH == "arm64" {
-		_, err = exec.Command("wget", civoUrl, "-P", k3aiDir).Output()
+		_, err = exec.Command("wget", civoUrlARM, "-P", k3aiDir).Output()
 	} else if runtime.GOARCH == "darwin" {
-		_, err = exec.Command("wget", civoUrl, "-P", k3aiDir).Output()
+		_, err = exec.Command("wget", civoUrlDarwin, "-P", k3aiDir).Output()
 	} else {
 		_, err = exec.Command("wget", civoUrl, "-P", k3aiDir).Output()
 	}
