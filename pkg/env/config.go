@@ -274,7 +274,7 @@ func civoConfig() {
 			log.Fatal(err)
 		}
 	} else {
-		_, err = exec.Command("tar", "-xvzf", k3aiDir+"/civo-1.0.4-linux-amd64.tar.gz", "-C", k3aiDir+"/civodir").Output()
+		_, err = exec.Command("/bin/bash", "-c", "rm "+"-r "+k3aiDir+"/civo-1.0.4-linux-amd64.tar.gz").Output()
 		if err != nil {
 			log.Fatal(err)
 		}
