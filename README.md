@@ -38,7 +38,7 @@ Let's discover **K3ai in three simple steps**.
 
 ## 🌘 Getting Started
 
-Get started by **download k3ai** from the release page [here](https://github.com/k3ai/releases).
+Get started by **download k3ai** from the release page [here](https://github.com/k3ai/k3ai/releases).
 
 Or **try K3ai companion script** using this command:
 
